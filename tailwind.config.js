@@ -6,6 +6,15 @@ export default {
   ],
   theme: {
     extend: {
+      keyframes: {
+        'audio-wave': {
+          '0%, 100%': { transform: 'scaleY(0.3)' },
+          '50%': { transform: 'scaleY(1)' },
+        },
+      },
+      animation: {
+        'audio-wave': 'audio-wave 1s ease-in-out infinite',
+      },
       colors: {
         primary: {
           blue: '#1a73e8',
@@ -16,7 +25,11 @@ export default {
           secondary: '#5f6368',
           border: '#dfe1e5',
           hover: '#f8f9fa',
-        }
+        },
+        'google-blue': '#4285f4',
+        'google-red': '#ea4335',
+        'google-yellow': '#fbbc05',
+        'google-green': '#34a853',
       },
       fontFamily: {
         'roboto': ['Roboto', 'Arial', 'sans-serif'],

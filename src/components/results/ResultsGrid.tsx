@@ -1,6 +1,7 @@
 import React, { useCallback, useRef, useState, KeyboardEvent } from 'react';
 import { ImageResult } from '../../types/image';
 import LazyImageViewer from './LazyImageViewer';
+import ShareButton from './ShareButton';
 
 interface ResultsGridProps {
   results: ImageResult[];
@@ -113,7 +114,7 @@ const ResultsGrid: React.FC<ResultsGridProps> = ({ results, loading, error }) =>
     <>
       <div
         ref={gridRef}
-        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 px-4 sm:px-6 lg:px-8"
         role="grid"
         aria-label="Search results grid"
         aria-rowcount={Math.ceil(results.length / 4)}
@@ -125,8 +126,8 @@ const ResultsGrid: React.FC<ResultsGridProps> = ({ results, loading, error }) =>
               itemRefs.current[index] = el;
             }}
             key={result.id}
-            className={`bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow ${
-              focusedIndex === index ? 'ring-2 ring-blue-500' : ''
+            className={`bg-white rounded-lg overflow-hidden hover:shadow-lg transition-shadow ${
+              focusedIndex === index ? 'ring-2 ring-[#1a73e8]' : ''
             }`}
             role="gridcell"
             aria-rowindex={Math.floor(index / 4) + 1}
@@ -137,42 +138,46 @@ const ResultsGrid: React.FC<ResultsGridProps> = ({ results, loading, error }) =>
             onFocus={() => setFocusedIndex(index)}
           >
             <div 
-              className="relative aspect-video"
+              className="relative aspect-video group"
               role="img"
               aria-label={result.title}
             >
               <img
                 src={result.thumbnailUrl}
                 alt={result.title}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover group-hover:opacity-90 transition-opacity"
                 loading="lazy"
               />
               {result.metadata?.similarity && (
                 <div 
-                  className="absolute top-2 right-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded"
+                  className="absolute top-2 right-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded-full"
                   aria-label={`${Math.round(result.metadata.similarity * 100)}% similar`}
                 >
                   {Math.round(result.metadata.similarity * 100)}% similar
                 </div>
               )}
+              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-200" />
             </div>
             <div className="p-3">
               <h3 
-                className="text-sm font-medium text-gray-900 mb-1 line-clamp-2"
+                className="text-sm font-normal text-[#202124] mb-1 line-clamp-2"
                 id={`image-title-${result.id}`}
               >
                 {result.title}
               </h3>
               <div 
-                className="flex items-center justify-between text-xs text-gray-500"
+                className="flex items-center justify-between text-xs text-[#70757a]"
                 aria-label={`Image details: from ${result.source}, size ${result.size}`}
               >
-                <span>{result.source}</span>
-                <span>{result.size}</span>
+                <span className="truncate">{result.source}</span>
+                <span className="ml-2 whitespace-nowrap">{result.size}</span>
+              </div>
+              <div className="mt-2 flex justify-end">
+                <ShareButton image={result} />
               </div>
               {result.metadata?.uploadedImage && (
                 <div 
-                  className="mt-2 text-xs text-gray-500"
+                  className="mt-2 text-xs text-[#70757a]"
                   aria-label={`Original image: ${result.metadata.uploadedImage.width}x${result.metadata.uploadedImage.height} pixels, size ${result.metadata.uploadedImage.size}`}
                 >
                   <p>Uploaded image: {result.metadata.uploadedImage.width}x{result.metadata.uploadedImage.height}</p>

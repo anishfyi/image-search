@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect, KeyboardEvent } from 'react';
-import { MagnifyingGlassIcon, MicrophoneIcon } from '../common/icons';
+import { MagnifyingGlassIcon, MicrophoneIcon, CameraIcon } from '../common/icons';
 import SearchSuggestions from './SearchSuggestions';
 import VoiceSearch from './VoiceSearch';
 import SearchHistory from './SearchHistory';
 import { useSearch } from '../../context/SearchContext';
 import ImageSearch from './ImageSearch';
 import GoogleLens from './GoogleLens';
+import AudioListeningAnimation from '../common/AudioListeningAnimation';
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
@@ -167,9 +168,9 @@ const SearchBar: React.FC<SearchBarProps> = ({
         aria-label="Search images"
       >
         <div className="relative w-full">
-          <div className="group flex items-center w-full bg-white rounded-full border hover:shadow-google focus-within:shadow-google hover:border-transparent focus-within:border-transparent transition-all duration-200">
+          <div className="group flex items-center w-full bg-white rounded-full border border-[#dfe1e5] hover:shadow-google focus-within:shadow-google hover:border-transparent focus-within:border-transparent transition-all duration-200">
             <div className="absolute left-4" aria-hidden="true">
-              <MagnifyingGlassIcon className="w-5 h-5 text-neutral-500" />
+              <MagnifyingGlassIcon className="w-5 h-5 text-[#9aa0a6]" />
             </div>
             <input
               ref={inputRef}
@@ -181,7 +182,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
               }}
               onFocus={handleInputFocus}
               onKeyDown={handleKeyDown}
-              className="w-full h-12 pl-12 pr-24 text-base text-neutral-900 bg-transparent rounded-full focus:outline-none"
+              className="w-full h-12 pl-12 pr-24 text-base text-[#202124] bg-transparent rounded-full focus:outline-none placeholder:text-[#9aa0a6]"
               placeholder="Search images..."
               disabled={isLoading}
               aria-label="Search images"
@@ -196,10 +197,14 @@ const SearchBar: React.FC<SearchBarProps> = ({
               <button
                 type="button"
                 onClick={() => setShowVoiceSearch(true)}
-                className="p-2 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="p-2 text-[#4285f4] hover:text-[#1a73e8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 rounded-full hover:bg-[#f8f9fa]"
                 aria-label="Voice search"
               >
-                <MicrophoneIcon className="w-5 h-5" />
+                {showVoiceSearch ? (
+                  <AudioListeningAnimation isListening={true} className="w-5 h-5" />
+                ) : (
+                  <MicrophoneIcon className="w-5 h-5" />
+                )}
               </button>
               <ImageSearch
                 onImageSelect={onImageSearch}

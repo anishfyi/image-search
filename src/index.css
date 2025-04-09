@@ -31,4 +31,25 @@
   .icon-button {
     @apply flex items-center justify-center w-10 h-10 rounded-full hover:bg-neutral-hover transition-colors;
   }
+}
+
+@layer utilities {
+  .shadow-google {
+    box-shadow: 0 1px 6px 0 rgb(32 33 36 / 28%);
+  }
+  
+  .animate-ripple {
+    animation: ripple 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
 } 

@@ -128,71 +128,38 @@ export class MockSearchService {
   }
 
   async searchByText(query: string): Promise<ImageResult[]> {
-    // Mock implementation
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve([
-          {
-            id: '1',
-            title: 'Sample Image 1',
-            url: 'https://example.com/image1.jpg',
-            thumbnailUrl: 'https://example.com/thumb1.jpg',
-            source: 'Example.com',
-            width: 800,
-            height: 600,
-            type: 'image/jpeg',
-            similarImages: [
-              {
-                url: 'https://example.com/similar1.jpg',
-                title: 'Similar Image 1',
-                source: 'Example.com'
-              },
-              {
-                url: 'https://example.com/similar2.jpg',
-                title: 'Similar Image 2',
-                source: 'Example.com'
-              }
-            ],
-            products: [
-              {
-                name: 'Product 1',
-                price: '$99.99',
-                merchant: 'Store 1',
-                merchantLogo: 'https://example.com/store1-logo.png',
-                url: 'https://example.com/product1'
-              }
-            ]
-          }
-        ]);
-      }, 1000);
-    });
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Filter images based on query
+    const filteredImages = sampleImages.filter(image => 
+      image.title.toLowerCase().includes(query.toLowerCase()) ||
+      image.source.toLowerCase().includes(query.toLowerCase())
+    );
+
+    // If no matches found, return all images (like Google does)
+    return filteredImages.length > 0 ? filteredImages : sampleImages;
   }
 
-  async searchByImage(imagePath: string): Promise<ImageResult> {
+  async searchByImage(file: File): Promise<ImageResult> {
     // Mock implementation
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({
           id: '1',
-          title: 'Uploaded Image',
-          url: imagePath,
-          thumbnailUrl: imagePath,
+          title: file.name,
+          url: URL.createObjectURL(file),
+          thumbnailUrl: URL.createObjectURL(file),
           source: 'User Upload',
           width: 1920,
           height: 1080,
-          type: 'image/jpeg',
-          similarImages: [
-            {
-              url: 'https://example.com/similar1.jpg',
-              title: 'Similar Image 1',
-              source: 'Example.com'
-            },
-            {
-              url: 'https://example.com/similar2.jpg',
-              title: 'Similar Image 2',
-              source: 'Example.com'
-            }
-          ],
+          type: file.type,
+          size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
+          similarImages: sampleImages.slice(0, 4).map(img => ({
+            url: img.url,
+            title: img.title,
+            source: img.source
+          })),
           products: [
             {
               name: 'Product 1',

@@ -4,11 +4,11 @@ import SearchBar from '../components/search/SearchBar';
 import GoogleLogo from '../components/common/GoogleLogo';
 
 const SearchPage: React.FC = () => {
-  const { search, setQuery, searchByImage, isLoading, error } = useSearch();
+  const { searchByText, setQuery, searchByImage, isLoading, error } = useSearch();
 
-  const handleSearch = (query: string) => {
+  const handleSearch = async (query: string) => {
     setQuery(query);
-    search();
+    await searchByText(query);
   };
 
   const handleImageSearch = async (file: File) => {

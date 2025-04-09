@@ -38,4 +38,11 @@ export interface ImageResult {
     merchantLogo: string;
     url: string;
   }>;
+}
+
+export interface ImageSearchResponse {
+  results: ImageResult[];
+  total: number;
+  page: number;
+  perPage: number;
 } 

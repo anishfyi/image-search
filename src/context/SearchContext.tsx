@@ -12,7 +12,7 @@ interface SearchContextType {
   totalPages: number;
   query: string;
   searchByText: (query: string) => Promise<void>;
-  searchByImage: (imagePath: string) => Promise<ImageResult>;
+  searchByImage: (file: File) => Promise<ImageResult>;
   getSuggestions: (query: string) => Promise<void>;
   clearResults: () => void;
   setCurrentPage: (page: number) => void;
@@ -61,11 +61,11 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
     }
   };
 
-  const searchByImage = async (imagePath: string): Promise<ImageResult> => {
+  const searchByImage = async (file: File): Promise<ImageResult> => {
     try {
       setIsLoading(true);
       setError(null);
-      const result = await searchService.searchByImage(imagePath);
+      const result = await searchService.searchByImage(file);
       setSearchResults([result]);
       setTotalPages(1);
       return result;
