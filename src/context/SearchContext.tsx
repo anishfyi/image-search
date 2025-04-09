@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { MockSearchService } from '../services/mockSearchService';
+import { ImageResult, ImageSearchResponse } from '../types/image';
 
 interface SearchFilters {
   size: string;
@@ -24,10 +26,17 @@ interface SearchContextType {
   searchHistory: SearchHistoryItem[];
   clearHistory: () => void;
   removeFromHistory: (timestamp: number) => void;
+  results: ImageResult[];
+  currentPage: number;
+  totalPages: number;
+  setCurrentPage: (page: number) => void;
+  suggestions: string[];
+  getSuggestions: (query: string) => void;
 }
 
 const HISTORY_STORAGE_KEY = 'search_history';
 const MAX_HISTORY_ITEMS = 10;
+const RESULTS_PER_PAGE = 8;
 
 const SearchContext = createContext<SearchContextType | undefined>(undefined);
 
@@ -57,6 +66,12 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
     const savedHistory = localStorage.getItem(HISTORY_STORAGE_KEY);
     return savedHistory ? JSON.parse(savedHistory) : [];
   });
+  const [results, setResults] = useState<ImageResult[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+
+  const searchService = MockSearchService.getInstance();
 
   useEffect(() => {
     localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(searchHistory));
@@ -70,7 +85,6 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
     };
 
     setSearchHistory(prevHistory => {
-      // Remove duplicates and keep only the most recent entries
       const filteredHistory = prevHistory.filter(item => item.query !== query);
       const newHistory = [newItem, ...filteredHistory].slice(0, MAX_HISTORY_ITEMS);
       return newHistory;
@@ -93,16 +107,34 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
     setIsLoading(true);
     setError(null);
     try {
-      // TODO: Implement actual search API call
-      console.log('Searching with:', { query, filters });
-      // Add to history before the API call
+      const response = await searchService.searchImages(
+        query.trim(),
+        currentPage,
+        RESULTS_PER_PAGE
+      );
+      setResults(response.results);
+      setTotalPages(Math.ceil(response.total / RESULTS_PER_PAGE));
       addToHistory(query.trim(), filters);
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
     } catch (err) {
       setError('An error occurred during the search');
+      setResults([]);
+      setTotalPages(0);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const getSuggestions = async (query: string) => {
+    if (!query.trim()) {
+      setSuggestions([]);
+      return;
+    }
+
+    try {
+      const suggestions = await searchService.getSuggestions(query.trim());
+      setSuggestions(suggestions);
+    } catch (err) {
+      setSuggestions([]);
     }
   };
 
@@ -119,6 +151,12 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
         searchHistory,
         clearHistory,
         removeFromHistory,
+        results,
+        currentPage,
+        totalPages,
+        setCurrentPage,
+        suggestions,
+        getSuggestions,
       }}
     >
       {children}
