@@ -1,4 +1,5 @@
 import { ImageResult, ImageSearchResponse } from '../types/image';
+import { ImageService } from './imageService';
 
 // Sample image data
 const sampleImages: ImageResult[] = [
@@ -94,7 +95,10 @@ const sampleImages: ImageResult[] = [
 
 export class MockSearchService {
   private static instance: MockSearchService;
-  private constructor() {}
+  private imageService: ImageService;
+  private constructor() {
+    this.imageService = ImageService.getInstance();
+  }
 
   static getInstance(): MockSearchService {
     if (!MockSearchService.instance) {
@@ -128,30 +132,41 @@ export class MockSearchService {
     page: number = 1,
     perPage: number = 8
   ): Promise<ImageSearchResponse> {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      // Process the uploaded image
+      const imageData = await this.imageService.processImage(file);
+      
+      // Find similar images
+      const similarImages = await this.imageService.findSimilarImages(imageData, sampleImages);
+      
+      // Apply pagination
+      const startIndex = (page - 1) * perPage;
+      const endIndex = startIndex + perPage;
+      const paginatedResults = similarImages.slice(startIndex, endIndex).map(img => ({
+        ...img,
+        title: `Similar to ${file.name} - ${img.title}`,
+        metadata: {
+          ...img.metadata,
+          similarity: (img as any).similarity,
+          uploadedImage: {
+            width: imageData.width,
+            height: imageData.height,
+            type: imageData.type,
+            size: imageData.size,
+          }
+        }
+      }));
 
-    // In a real implementation, this would:
-    // 1. Upload the image to a server
-    // 2. Process the image to extract features
-    // 3. Search for similar images
-    // 4. Return the results
-
-    // For now, we'll return a subset of our sample images
-    // and include the uploaded image's name in the results
-    const startIndex = (page - 1) * perPage;
-    const endIndex = startIndex + perPage;
-    const paginatedResults = sampleImages.slice(startIndex, endIndex).map(img => ({
-      ...img,
-      title: `Similar to ${file.name} - ${img.title}`,
-    }));
-
-    return {
-      results: paginatedResults,
-      total: sampleImages.length,
-      page,
-      perPage,
-    };
+      return {
+        results: paginatedResults,
+        total: similarImages.length,
+        page,
+        perPage,
+      };
+    } catch (error) {
+      console.error('Error in searchByImage:', error);
+      throw new Error('Failed to process image and find similar images');
+    }
   }
 
   async getSuggestions(query: string): Promise<string[]> {

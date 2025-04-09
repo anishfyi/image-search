@@ -1,3 +1,13 @@
+export interface ImageMetadata {
+  similarity?: number;
+  uploadedImage?: {
+    width: number;
+    height: number;
+    type: string;
+    size: string;
+  };
+}
+
 export interface ImageResult {
   id: string;
   title: string;
@@ -8,6 +18,7 @@ export interface ImageResult {
   height: number;
   size: string;
   type: string;
+  metadata?: ImageMetadata;
 }
 
 export interface ImageSearchResponse {
