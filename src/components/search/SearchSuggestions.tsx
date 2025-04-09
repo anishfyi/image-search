@@ -9,23 +9,36 @@ interface SearchSuggestionsProps {
   suggestions: SearchSuggestion[];
   onSelect: (suggestion: string) => void;
   className?: string;
+  selectedIndex: number;
 }
 
 const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
   suggestions,
   onSelect,
   className = '',
+  selectedIndex
 }) => {
   if (suggestions.length === 0) return null;
 
   return (
-    <div className={`absolute top-full left-0 w-full mt-1 bg-white rounded-lg shadow-lg ${className}`}>
+    <div 
+      className={`absolute top-full left-0 w-full mt-1 bg-white rounded-lg shadow-lg ${className}`}
+      role="listbox"
+      aria-label="Search suggestions"
+    >
       <ul className="py-2">
         {suggestions.map((suggestion, index) => (
-          <li key={index}>
+          <li 
+            key={index}
+            role="option"
+            aria-selected={index === selectedIndex}
+          >
             <button
               onClick={() => onSelect(suggestion.text)}
-              className="w-full px-4 py-2 text-left text-sm text-neutral-text hover:bg-neutral-hover flex items-center space-x-3"
+              className={`w-full px-4 py-2 text-left text-sm hover:bg-neutral-hover flex items-center space-x-3 ${
+                index === selectedIndex ? 'bg-neutral-hover' : ''
+              }`}
+              id={`suggestion-${index}`}
             >
               {suggestion.type === 'history' ? (
                 <svg
@@ -33,6 +46,7 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
+                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"
@@ -47,6 +61,7 @@ const SearchSuggestions: React.FC<SearchSuggestionsProps> = ({
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
+                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"

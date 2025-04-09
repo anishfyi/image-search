@@ -1,8 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, KeyboardEvent } from 'react';
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import SearchSuggestions from './SearchSuggestions';
 import VoiceSearch from './VoiceSearch';
-import ImageSearch from './ImageSearch';
 import SearchHistory from './SearchHistory';
 import { useSearch } from '../../context/SearchContext';
 import ImageUpload from './ImageUpload';
@@ -25,8 +24,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [suggestions, setSuggestions] = useState<Array<{ text: string; type: 'history' | 'suggestion' }>>([]);
+  const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const suggestionsRef = useRef<HTMLDivElement>(null);
   const { query, setQuery, searchHistory } = useSearch();
   const [showImageUpload, setShowImageUpload] = useState(false);
 
@@ -43,6 +44,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setShowSuggestions(false);
         setShowHistory(false);
+        setSelectedSuggestionIndex(-1);
       }
     };
 
@@ -63,6 +65,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
       setShowSuggestions(false);
       setShowHistory(true);
     }
+    setSelectedSuggestionIndex(-1);
   }, [query]);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -71,6 +74,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
       onSearch(query.trim());
       setShowSuggestions(false);
       setShowHistory(false);
+      setSelectedSuggestionIndex(-1);
     }
   };
 
@@ -79,7 +83,44 @@ const SearchBar: React.FC<SearchBarProps> = ({
     onSearch(suggestion);
     setShowSuggestions(false);
     setShowHistory(false);
+    setSelectedSuggestionIndex(-1);
     inputRef.current?.focus();
+  };
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (!showSuggestions && !showHistory) return;
+
+    const suggestions = showSuggestions ? mockSuggestions : searchHistory.map(h => ({ text: h.query, type: 'history' as const }));
+    
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedSuggestionIndex(prev => 
+          prev < suggestions.length - 1 ? prev + 1 : prev
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedSuggestionIndex(prev => 
+          prev > 0 ? prev - 1 : -1
+        );
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedSuggestionIndex >= 0 && selectedSuggestionIndex < suggestions.length) {
+          handleSuggestionSelect(suggestions[selectedSuggestionIndex].text);
+        } else {
+          handleSubmit(e);
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setShowSuggestions(false);
+        setShowHistory(false);
+        setSelectedSuggestionIndex(-1);
+        inputRef.current?.blur();
+        break;
+    }
   };
 
   const handleVoiceResult = (text: string) => {
@@ -111,11 +152,21 @@ const SearchBar: React.FC<SearchBarProps> = ({
   };
 
   return (
-    <div ref={containerRef} className="w-full">
-      <form onSubmit={handleSubmit} className="flex flex-col items-center">
+    <div 
+      ref={containerRef} 
+      className="w-full"
+      role="search"
+      aria-label="Image search"
+    >
+      <form 
+        onSubmit={handleSubmit} 
+        className="flex flex-col items-center"
+        role="search"
+        aria-label="Search images"
+      >
         <div className="relative w-full">
           <div className="group flex items-center w-full bg-white rounded-full border hover:shadow-google focus-within:shadow-google hover:border-transparent focus-within:border-transparent transition-all duration-200">
-            <div className="absolute left-4">
+            <div className="absolute left-4" aria-hidden="true">
               <MagnifyingGlassIcon className="w-5 h-5 text-neutral-500" />
             </div>
             <input
@@ -127,11 +178,19 @@ const SearchBar: React.FC<SearchBarProps> = ({
                 setShowSuggestions(true);
               }}
               onFocus={handleInputFocus}
+              onKeyDown={handleKeyDown}
               className="w-full h-12 pl-12 pr-24 text-base text-neutral-900 bg-transparent rounded-full focus:outline-none"
               placeholder="Search images..."
               disabled={isLoading}
+              aria-label="Search images"
+              aria-describedby={error ? 'search-error' : undefined}
+              aria-expanded={showSuggestions || showHistory}
+              aria-controls={showSuggestions || showHistory ? 'search-suggestions' : undefined}
+              aria-activedescendant={selectedSuggestionIndex >= 0 ? `suggestion-${selectedSuggestionIndex}` : undefined}
+              role="combobox"
+              aria-autocomplete="list"
             />
-            <div className="absolute right-2 flex items-center space-x-2">
+            <div className="flex items-center space-x-2 pr-4">
               <VoiceSearch
                 onResult={handleVoiceResult}
                 onError={handleVoiceError}
@@ -139,9 +198,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
               <button
                 type="button"
                 onClick={() => setShowImageUpload(!showImageUpload)}
-                className="p-2 text-gray-500 hover:text-gray-700"
-                aria-label="Upload image"
-                disabled={isLoading}
+                className="p-2 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                aria-label={showImageUpload ? "Close image upload" : "Upload image to search"}
+                aria-expanded={showImageUpload}
+                aria-controls="image-upload-section"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -149,6 +209,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
+                  aria-hidden="true"
                 >
                   <path
                     strokeLinecap="round"
@@ -160,24 +221,38 @@ const SearchBar: React.FC<SearchBarProps> = ({
               </button>
             </div>
           </div>
-          {showSuggestions && (
-            <SearchSuggestions
-              suggestions={suggestions}
-              onSelect={handleSuggestionSelect}
-            />
-          )}
-          {showHistory && searchHistory.length > 0 && (
-            <SearchHistory
-              onSelect={handleSuggestionSelect}
+          {(showSuggestions || showHistory) && (
+            <div
+              ref={suggestionsRef}
+              id="search-suggestions"
               className="absolute top-full left-0 right-0 mt-1 z-10"
-            />
+              role="listbox"
+              aria-label="Search suggestions"
+            >
+              {showSuggestions && (
+                <SearchSuggestions
+                  suggestions={suggestions}
+                  onSelect={handleSuggestionSelect}
+                  selectedIndex={selectedSuggestionIndex}
+                />
+              )}
+              {showHistory && searchHistory.length > 0 && (
+                <SearchHistory
+                  onSelect={handleSuggestionSelect}
+                  className="absolute top-full left-0 right-0 mt-1 z-10"
+                  selectedIndex={selectedSuggestionIndex}
+                />
+              )}
+            </div>
           )}
         </div>
-        <div className="flex justify-center mt-8 space-x-3">
+        
+        <div className="flex items-center space-x-2 mt-4">
           <button
             type="submit"
             disabled={isLoading || !query.trim()}
-            className="px-6 py-2 text-sm bg-[#f8f9fa] text-[#3c4043] rounded hover:shadow-sm hover:border-[#dadce0] border border-transparent disabled:opacity-50"
+            className="px-6 py-2 text-sm bg-[#f8f9fa] text-[#3c4043] rounded hover:shadow-sm hover:border-[#dadce0] border border-transparent disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            aria-label={isLoading ? "Searching..." : "Search"}
           >
             {isLoading ? (
               <svg
@@ -185,6 +260,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
+                aria-hidden="true"
               >
                 <circle
                   className="opacity-25"
@@ -206,6 +282,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
+                aria-hidden="true"
               >
                 <path
                   strokeLinecap="round"
@@ -218,7 +295,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
           </button>
           <button
             type="button"
-            className="px-6 py-2 text-sm bg-[#f8f9fa] text-[#3c4043] rounded hover:shadow-sm hover:border-[#dadce0] border border-transparent"
+            className="px-6 py-2 text-sm bg-[#f8f9fa] text-[#3c4043] rounded hover:shadow-sm hover:border-[#dadce0] border border-transparent focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            aria-label="I'm Feeling Lucky"
           >
             I'm Feeling Lucky
           </button>
@@ -226,11 +304,23 @@ const SearchBar: React.FC<SearchBarProps> = ({
       </form>
 
       {error && (
-        <div className="mt-2 text-red-500 text-sm text-center">{error}</div>
+        <div 
+          id="search-error"
+          className="mt-2 text-red-500 text-sm text-center"
+          role="alert"
+          aria-live="polite"
+        >
+          {error}
+        </div>
       )}
 
       {showImageUpload && (
-        <div className="mt-4">
+        <div 
+          id="image-upload-section"
+          className="mt-4"
+          role="region"
+          aria-label="Image upload"
+        >
           <ImageUpload onImageSelect={handleImageSelect} />
         </div>
       )}
