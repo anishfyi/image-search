@@ -127,63 +127,96 @@ export class MockSearchService {
     };
   }
 
-  async searchByImage(
-    file: File,
-    page: number = 1,
-    perPage: number = 8
-  ): Promise<ImageSearchResponse> {
-    try {
-      // Process the uploaded image
-      const imageData = await this.imageService.processImage(file);
-      
-      // Find similar images
-      const similarImages = await this.imageService.findSimilarImages(imageData, sampleImages);
-      
-      // Apply pagination
-      const startIndex = (page - 1) * perPage;
-      const endIndex = startIndex + perPage;
-      const paginatedResults = similarImages.slice(startIndex, endIndex).map(img => ({
-        ...img,
-        title: `Similar to ${file.name} - ${img.title}`,
-        metadata: {
-          ...img.metadata,
-          similarity: (img as any).similarity,
-          uploadedImage: {
-            width: imageData.width,
-            height: imageData.height,
-            type: imageData.type,
-            size: imageData.size,
+  async searchByText(query: string): Promise<ImageResult[]> {
+    // Mock implementation
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve([
+          {
+            id: '1',
+            title: 'Sample Image 1',
+            url: 'https://example.com/image1.jpg',
+            thumbnailUrl: 'https://example.com/thumb1.jpg',
+            source: 'Example.com',
+            width: 800,
+            height: 600,
+            type: 'image/jpeg',
+            similarImages: [
+              {
+                url: 'https://example.com/similar1.jpg',
+                title: 'Similar Image 1',
+                source: 'Example.com'
+              },
+              {
+                url: 'https://example.com/similar2.jpg',
+                title: 'Similar Image 2',
+                source: 'Example.com'
+              }
+            ],
+            products: [
+              {
+                name: 'Product 1',
+                price: '$99.99',
+                merchant: 'Store 1',
+                merchantLogo: 'https://example.com/store1-logo.png',
+                url: 'https://example.com/product1'
+              }
+            ]
           }
-        }
-      }));
+        ]);
+      }, 1000);
+    });
+  }
 
-      return {
-        results: paginatedResults,
-        total: similarImages.length,
-        page,
-        perPage,
-      };
-    } catch (error) {
-      console.error('Error in searchByImage:', error);
-      throw new Error('Failed to process image and find similar images');
-    }
+  async searchByImage(imagePath: string): Promise<ImageResult> {
+    // Mock implementation
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({
+          id: '1',
+          title: 'Uploaded Image',
+          url: imagePath,
+          thumbnailUrl: imagePath,
+          source: 'User Upload',
+          width: 1920,
+          height: 1080,
+          type: 'image/jpeg',
+          similarImages: [
+            {
+              url: 'https://example.com/similar1.jpg',
+              title: 'Similar Image 1',
+              source: 'Example.com'
+            },
+            {
+              url: 'https://example.com/similar2.jpg',
+              title: 'Similar Image 2',
+              source: 'Example.com'
+            }
+          ],
+          products: [
+            {
+              name: 'Product 1',
+              price: '$99.99',
+              merchant: 'Store 1',
+              merchantLogo: 'https://example.com/store1-logo.png',
+              url: 'https://example.com/product1'
+            }
+          ]
+        });
+      }, 1000);
+    });
   }
 
   async getSuggestions(query: string): Promise<string[]> {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    if (!query) return [];
-
-    // Generate some mock suggestions based on the query
-    const mockSuggestions = [
-      `${query} images`,
-      `${query} photos`,
-      `${query} pictures`,
-      `free ${query} images`,
-      `${query} stock photos`,
-    ];
-
-    return mockSuggestions;
+    // Mock implementation
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve([
+          `${query} suggestion 1`,
+          `${query} suggestion 2`,
+          `${query} suggestion 3`
+        ]);
+      }, 300);
+    });
   }
 } 

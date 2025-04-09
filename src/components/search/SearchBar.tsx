@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect, KeyboardEvent } from 'react';
-import { MagnifyingGlassIcon, MicrophoneIcon, CameraIcon } from '../common/icons';
+import { MagnifyingGlassIcon, MicrophoneIcon } from '../common/icons';
 import SearchSuggestions from './SearchSuggestions';
 import VoiceSearch from './VoiceSearch';
 import SearchHistory from './SearchHistory';
 import { useSearch } from '../../context/SearchContext';
-import ImageUpload from './ImageUpload';
 import ImageSearch from './ImageSearch';
+import GoogleLens from './GoogleLens';
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
@@ -26,11 +26,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const [showHistory, setShowHistory] = useState(false);
   const [suggestions, setSuggestions] = useState<Array<{ text: string; type: 'history' | 'suggestion' }>>([]);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
+  const [showLens, setShowLens] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const suggestionsRef = useRef<HTMLDivElement>(null);
-  const { query, setQuery, searchHistory } = useSearch();
-  const [showImageUpload, setShowImageUpload] = useState(false);
+  const { query = '', setQuery, searchHistory } = useSearch();
   const [showVoiceSearch, setShowVoiceSearch] = useState(false);
 
   // Mock suggestions - in a real app, these would come from an API
@@ -154,11 +153,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
     }
   };
 
-  const handleImageSelect = (file: File) => {
-    onImageSearch(file);
-    setShowImageUpload(false);
-  };
-
   return (
     <div 
       ref={containerRef} 
@@ -198,7 +192,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
               role="combobox"
               aria-autocomplete="list"
             />
-            <div className="flex items-center space-x-2 pr-4">
+            <div className="flex items-center space-x-1 pr-4">
               <button
                 type="button"
                 onClick={() => setShowVoiceSearch(true)}
@@ -207,27 +201,20 @@ const SearchBar: React.FC<SearchBarProps> = ({
               >
                 <MicrophoneIcon className="w-5 h-5" />
               </button>
-              <button
-                type="button"
-                onClick={() => setShowImageUpload(!showImageUpload)}
-                className="p-2 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                aria-label={showImageUpload ? "Close image upload" : "Upload image to search"}
-                aria-expanded={showImageUpload}
-                aria-controls="image-upload-section"
-              >
-                <CameraIcon className="w-5 h-5" />
-              </button>
+              <ImageSearch
+                onImageSelect={onImageSearch}
+                onError={handleImageError}
+              />
             </div>
           </div>
           {(showSuggestions || showHistory) && (
             <div
-              ref={suggestionsRef}
               id="search-suggestions"
               className="absolute top-full left-0 right-0 mt-1 z-10"
               role="listbox"
               aria-label="Search suggestions"
             >
-              {showSuggestions && (
+              {showSuggestions && suggestions.length > 0 && (
                 <SearchSuggestions
                   suggestions={suggestions}
                   onSelect={handleSuggestionSelect}
@@ -312,21 +299,16 @@ const SearchBar: React.FC<SearchBarProps> = ({
         </div>
       )}
 
-      {showImageUpload && (
-        <div 
-          id="image-upload-section"
-          className="mt-4"
-          role="region"
-          aria-label="Image upload"
-        >
-          <ImageUpload onImageSelect={handleImageSelect} />
-        </div>
-      )}
-
       {showVoiceSearch && (
         <VoiceSearch
           onResult={handleVoiceResult}
           onClose={() => setShowVoiceSearch(false)}
+        />
+      )}
+
+      {showLens && (
+        <GoogleLens
+          onClose={() => setShowLens(false)}
         />
       )}
     </div>

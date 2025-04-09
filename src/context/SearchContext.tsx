@@ -1,44 +1,23 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { ImageResult } from '../types/image';
 import { MockSearchService } from '../services/mockSearchService';
-import { ImageResult, ImageSearchResponse } from '../types/image';
-
-interface SearchFilters {
-  size: string;
-  color: string;
-  type: string;
-  time: string;
-}
-
-interface SearchHistoryItem {
-  query: string;
-  timestamp: number;
-  filters: SearchFilters;
-  isImageSearch?: boolean;
-}
 
 interface SearchContextType {
-  query: string;
-  setQuery: (query: string) => void;
-  filters: SearchFilters;
-  setFilters: (filters: SearchFilters) => void;
-  search: () => Promise<void>;
-  searchByImage: (file: File) => Promise<ImageResult>;
+  searchResults: ImageResult[];
+  searchHistory: Array<{ query: string; timestamp: number }>;
+  suggestions: string[];
   isLoading: boolean;
   error: string | null;
-  searchHistory: SearchHistoryItem[];
-  clearHistory: () => void;
-  removeFromHistory: (timestamp: number) => void;
-  results: ImageResult[];
   currentPage: number;
   totalPages: number;
+  query: string;
+  searchByText: (query: string) => Promise<void>;
+  searchByImage: (imagePath: string) => Promise<ImageResult>;
+  getSuggestions: (query: string) => Promise<void>;
+  clearResults: () => void;
   setCurrentPage: (page: number) => void;
-  suggestions: string[];
-  getSuggestions: (query: string) => void;
+  setQuery: (query: string) => void;
 }
-
-const HISTORY_STORAGE_KEY = 'search_history';
-const MAX_HISTORY_ITEMS = 10;
-const RESULTS_PER_PAGE = 8;
 
 const SearchContext = createContext<SearchContextType | undefined>(undefined);
 
@@ -55,176 +34,84 @@ interface SearchProviderProps {
 }
 
 export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
-  const [query, setQuery] = useState('');
-  const [filters, setFilters] = useState<SearchFilters>({
-    size: 'any',
-    color: 'any',
-    type: 'any',
-    time: 'any',
-  });
+  const [searchResults, setSearchResults] = useState<ImageResult[]>([]);
+  const [searchHistory, setSearchHistory] = useState<Array<{ query: string; timestamp: number }>>([]);
+  const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [searchHistory, setSearchHistory] = useState<SearchHistoryItem[]>(() => {
-    const savedHistory = localStorage.getItem(HISTORY_STORAGE_KEY);
-    return savedHistory ? JSON.parse(savedHistory) : [];
-  });
-  const [results, setResults] = useState<ImageResult[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
-  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [totalPages, setTotalPages] = useState(1);
+  const [query, setQuery] = useState('');
 
   const searchService = MockSearchService.getInstance();
 
-  useEffect(() => {
-    localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(searchHistory));
-  }, [searchHistory]);
-
-  const addToHistory = (query: string, filters: SearchFilters, isImageSearch = false) => {
-    const newItem: SearchHistoryItem = {
-      query,
-      filters,
-      timestamp: Date.now(),
-      isImageSearch,
-    };
-
-    setSearchHistory(prevHistory => {
-      const filteredHistory = prevHistory.filter(item => 
-        item.query !== query || item.isImageSearch !== isImageSearch
-      );
-      const newHistory = [newItem, ...filteredHistory].slice(0, MAX_HISTORY_ITEMS);
-      return newHistory;
-    });
-  };
-
-  const removeFromHistory = (timestamp: number) => {
-    setSearchHistory(prevHistory =>
-      prevHistory.filter(item => item.timestamp !== timestamp)
-    );
-  };
-
-  const clearHistory = () => {
-    setSearchHistory([]);
-  };
-
-  const search = useCallback(async () => {
-    if (!query.trim()) return;
-
-    setIsLoading(true);
-    setError(null);
-
+  const searchByText = async (query: string) => {
     try {
-      // Mock API call
-      const mockResults: ImageResult[] = [
-        {
-          id: '1',
-          url: 'https://example.com/image1.jpg',
-          thumbnailUrl: 'https://example.com/thumb1.jpg',
-          title: 'Sample Image 1',
-          source: 'Example.com',
-          width: 800,
-          height: 600,
-          format: 'JPEG',
-          similarImages: [
-            { url: 'https://example.com/similar1.jpg', similarity: 0.95 },
-            { url: 'https://example.com/similar2.jpg', similarity: 0.92 }
-          ],
-          products: [
-            {
-              name: 'Sample Product',
-              price: '$99.99',
-              merchant: 'Amazon',
-              merchantLogo: 'https://example.com/amazon-logo.png'
-            }
-          ]
-        }
-      ];
-
-      setResults(mockResults);
-    } catch (err) {
-      setError('Failed to perform search. Please try again.');
-      console.error('Search error:', err);
+      setIsLoading(true);
+      setError(null);
+      const results = await searchService.searchByText(query);
+      setSearchResults(results);
+      setTotalPages(Math.ceil(results.length / 12)); // Assuming 12 items per page
+      setSearchHistory(prev => [...prev, { query, timestamp: Date.now() }].slice(0, 10));
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'An error occurred during search');
+      setSearchResults([]);
     } finally {
       setIsLoading(false);
     }
-  }, [query]);
+  };
 
-  const searchByImage = useCallback(async (file: File): Promise<ImageResult> => {
-    setIsLoading(true);
-    setError(null);
-
+  const searchByImage = async (imagePath: string): Promise<ImageResult> => {
     try {
-      // Mock image analysis
-      const mockResult: ImageResult = {
-        id: '1',
-        url: URL.createObjectURL(file),
-        thumbnailUrl: URL.createObjectURL(file),
-        title: 'Analyzed Image',
-        source: 'Google Lens',
-        width: 800,
-        height: 600,
-        format: file.type.split('/')[1].toUpperCase(),
-        similarImages: [
-          { url: 'https://example.com/similar1.jpg', similarity: 0.95 },
-          { url: 'https://example.com/similar2.jpg', similarity: 0.92 }
-        ],
-        products: [
-          {
-            name: 'Sample Product',
-            price: '$99.99',
-            merchant: 'Amazon',
-            merchantLogo: 'https://example.com/amazon-logo.png'
-          }
-        ],
-        detectedText: 'Sample text detected in image',
-        translation: 'Translated text',
-        problemAnalysis: 'This appears to be a math problem about...',
-        solution: 'The solution to the problem is...'
-      };
-
-      return mockResult;
-    } catch (err) {
-      setError('Failed to analyze image. Please try again.');
-      console.error('Image analysis error:', err);
-      throw err;
+      setIsLoading(true);
+      setError(null);
+      const result = await searchService.searchByImage(imagePath);
+      setSearchResults([result]);
+      setTotalPages(1);
+      return result;
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'An error occurred during image search');
+      throw error;
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  };
 
   const getSuggestions = async (query: string) => {
-    if (!query.trim()) {
-      setSuggestions([]);
-      return;
-    }
-
     try {
-      const suggestions = await searchService.getSuggestions(query.trim());
-      setSuggestions(suggestions);
-    } catch (err) {
-      setSuggestions([]);
+      const results = await searchService.getSuggestions(query);
+      setSuggestions(results);
+    } catch (error) {
+      console.error('Suggestions error:', error);
+      throw error;
     }
+  };
+
+  const clearResults = () => {
+    setSearchResults([]);
+    setSuggestions([]);
+    setError(null);
+    setCurrentPage(1);
+    setTotalPages(1);
   };
 
   return (
     <SearchContext.Provider
       value={{
-        query,
-        setQuery,
-        filters,
-        setFilters,
-        search,
-        searchByImage,
+        searchResults,
+        searchHistory,
+        suggestions,
         isLoading,
         error,
-        searchHistory,
-        clearHistory,
-        removeFromHistory,
-        results,
         currentPage,
         totalPages,
-        setCurrentPage,
-        suggestions,
+        query,
+        searchByText,
+        searchByImage,
         getSuggestions,
+        clearResults,
+        setCurrentPage,
+        setQuery,
       }}
     >
       {children}

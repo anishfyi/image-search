@@ -12,7 +12,7 @@ export class VisionService {
     return VisionService.instance;
   }
 
-  async detectObjects(imageFile: File): Promise<ImageResult['detectedObjects']> {
+  async detectObjects(imagePath: string): Promise<ImageResult['detectedObjects']> {
     // Mock implementation - in a real app, this would call a computer vision API
     return new Promise((resolve) => {
       setTimeout(() => {
@@ -42,7 +42,7 @@ export class VisionService {
     });
   }
 
-  async detectText(imageFile: File): Promise<string> {
+  async detectText(imagePath: string): Promise<string> {
     // Mock implementation - in a real app, this would call an OCR API
     return new Promise((resolve) => {
       setTimeout(() => {
@@ -60,7 +60,7 @@ export class VisionService {
     });
   }
 
-  async analyzeProblem(imageFile: File): Promise<{ analysis: string; solution: string }> {
+  async analyzeProblem(imagePath: string): Promise<{ analysis: string; solution: string }> {
     // Mock implementation - in a real app, this would call an AI service
     return new Promise((resolve) => {
       setTimeout(() => {
