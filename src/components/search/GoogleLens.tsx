@@ -3,6 +3,7 @@ import { CameraIcon, XMarkIcon } from '../common/icons';
 import { useSearch } from '../../context/SearchContext';
 import ImageAnalysis from './ImageAnalysis';
 import { ImageResult } from '../../types/image';
+import { VisionService } from '../../services/visionService';
 
 interface GoogleLensProps {
   onClose: () => void;
@@ -15,9 +16,11 @@ const GoogleLens: React.FC<GoogleLensProps> = ({ onClose }) => {
   const [zoomLevel, setZoomLevel] = useState(1);
   const [error, setError] = useState<string | null>(null);
   const [analysisResult, setAnalysisResult] = useState<ImageResult | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const { searchByImage } = useSearch();
+  const visionService = VisionService.getInstance();
 
   useEffect(() => {
     return () => {
@@ -83,6 +86,37 @@ const GoogleLens: React.FC<GoogleLensProps> = ({ onClose }) => {
     }
   };
 
+  const processImage = async (file: File) => {
+    setIsProcessing(true);
+    try {
+      const baseResult = await searchByImage(file);
+      let enhancedResult = { ...baseResult };
+
+      switch (selectedMode) {
+        case 'search':
+          enhancedResult.detectedObjects = await visionService.detectObjects(file);
+          break;
+        case 'translate':
+          const detectedText = await visionService.detectText(file);
+          enhancedResult.detectedText = detectedText;
+          enhancedResult.translation = await visionService.translateText(detectedText);
+          break;
+        case 'homework':
+          const { analysis, solution } = await visionService.analyzeProblem(file);
+          enhancedResult.problemAnalysis = analysis;
+          enhancedResult.solution = solution;
+          break;
+      }
+
+      setAnalysisResult(enhancedResult);
+    } catch (err) {
+      setError('Failed to process image. Please try again.');
+      console.error('Image processing error:', err);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const captureImage = async () => {
     if (!videoRef.current) return;
 
@@ -96,19 +130,8 @@ const GoogleLens: React.FC<GoogleLensProps> = ({ onClose }) => {
     canvas.toBlob(async (blob) => {
       if (blob) {
         const file = new File([blob], 'capture.jpg', { type: 'image/jpeg' });
-        try {
-          const result = await searchByImage(file);
-          // Format size as string
-          const formattedResult = {
-            ...result,
-            size: result.size ? `${result.size} bytes` : undefined
-          };
-          setAnalysisResult(formattedResult);
-          stopCamera();
-        } catch (err) {
-          setError('Failed to analyze image. Please try again.');
-          console.error('Image analysis error:', err);
-        }
+        await processImage(file);
+        stopCamera();
       }
     }, 'image/jpeg');
   };
@@ -156,6 +179,7 @@ const GoogleLens: React.FC<GoogleLensProps> = ({ onClose }) => {
           <button
             onClick={startCamera}
             className="flex flex-col items-center text-white"
+            disabled={isProcessing}
           >
             <CameraIcon className="w-16 h-16 mb-4" />
             <span className="text-lg">Open Camera</span>
@@ -177,6 +201,7 @@ const GoogleLens: React.FC<GoogleLensProps> = ({ onClose }) => {
               onClick={toggleFlash}
               className="text-white p-2 rounded-full hover:bg-white/10"
               aria-label={isFlashOn ? 'Turn off flash' : 'Turn on flash'}
+              disabled={isProcessing}
             >
               <svg
                 className="w-6 h-6"
@@ -196,11 +221,13 @@ const GoogleLens: React.FC<GoogleLensProps> = ({ onClose }) => {
               onClick={captureImage}
               className="w-16 h-16 rounded-full bg-white border-4 border-gray-200"
               aria-label="Take photo"
+              disabled={isProcessing}
             />
             <button
               onClick={() => handleZoom(0.1)}
               className="text-white p-2 rounded-full hover:bg-white/10"
               aria-label="Zoom in"
+              disabled={isProcessing}
             >
               <svg
                 className="w-6 h-6"
@@ -218,6 +245,12 @@ const GoogleLens: React.FC<GoogleLensProps> = ({ onClose }) => {
             </button>
           </div>
         </>
+      )}
+
+      {isProcessing && (
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+        </div>
       )}
 
       {analysisResult && (

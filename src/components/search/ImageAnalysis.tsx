@@ -20,13 +20,29 @@ const ImageAnalysis: React.FC<ImageAnalysisProps> = ({ image, mode }) => {
           </div>
           <div className="flex items-center space-x-2">
             <span className="text-sm text-neutral-500">Format:</span>
-            <span className="text-sm text-neutral-900">{image.format}</span>
+            <span className="text-sm text-neutral-900">{image.type}</span>
           </div>
         </div>
       </div>
 
       {mode === 'search' && (
         <div className="space-y-4">
+          {image.detectedObjects && image.detectedObjects.length > 0 && (
+            <div>
+              <h3 className="text-md font-medium text-neutral-900">Detected Objects</h3>
+              <div className="mt-2 space-y-2">
+                {image.detectedObjects.map((obj, index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <span className="text-sm text-neutral-900">{obj.label}</span>
+                    <span className="text-sm text-neutral-500">
+                      {Math.round(obj.confidence * 100)}% confidence
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div>
             <h3 className="text-md font-medium text-neutral-900">Visual matches</h3>
             <div className="mt-2 grid grid-cols-2 gap-2">
@@ -47,7 +63,13 @@ const ImageAnalysis: React.FC<ImageAnalysisProps> = ({ image, mode }) => {
               <h3 className="text-md font-medium text-neutral-900">Products</h3>
               <div className="mt-2 space-y-2">
                 {image.products.map((product, index) => (
-                  <div key={index} className="flex items-center space-x-2">
+                  <a
+                    key={index}
+                    href={product.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center space-x-2 hover:bg-neutral-50 p-2 rounded"
+                  >
                     <img
                       src={product.merchantLogo}
                       alt={product.merchant}
@@ -55,7 +77,7 @@ const ImageAnalysis: React.FC<ImageAnalysisProps> = ({ image, mode }) => {
                     />
                     <span className="text-sm text-neutral-900">{product.name}</span>
                     <span className="text-sm text-neutral-500">{product.price}</span>
-                  </div>
+                  </a>
                 ))}
               </div>
             </div>

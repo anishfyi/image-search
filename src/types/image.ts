@@ -1,26 +1,41 @@
 export interface ImageResult {
   id: string;
+  title: string;
   url: string;
   thumbnailUrl: string;
-  title: string;
   source: string;
   width: number;
   height: number;
-  format?: string;
+  size?: string;
+  type: string;
+  metadata?: {
+    [key: string]: any;
+  };
+  // New fields for object detection and OCR
+  detectedObjects?: Array<{
+    label: string;
+    confidence: number;
+    boundingBox: {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    };
+  }>;
+  detectedText?: string;
+  translation?: string;
+  problemAnalysis?: string;
+  solution?: string;
   similarImages?: Array<{
     url: string;
-    similarity: number;
+    title: string;
+    source: string;
   }>;
   products?: Array<{
     name: string;
     price: string;
     merchant: string;
     merchantLogo: string;
+    url: string;
   }>;
-  detectedText?: string;
-  translation?: string;
-  problemAnalysis?: string;
-  solution?: string;
-  size?: string;
-  type?: string;
 } 
