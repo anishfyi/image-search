@@ -1,5 +1,6 @@
-import React, { useCallback, useState } from 'react';
+import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
+import ImageCropper from './ImageCropper';
 
 interface ImageUploadProps {
   onImageSelect: (file: File) => void;
@@ -7,118 +8,121 @@ interface ImageUploadProps {
 
 const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelect }) => {
   const [preview, setPreview] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [showCropper, setShowCropper] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    setError(null);
+  const onDrop = (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
-    
-    if (!file) {
-      setError('No file selected');
-      return;
+    if (file) {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onload = () => {
+        setPreview(reader.result as string);
+        setShowCropper(true);
+      };
+      reader.readAsDataURL(file);
     }
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      setError('Please upload an image file');
-      return;
-    }
-
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setError('File size should be less than 5MB');
-      return;
-    }
-
-    // Create preview
-    const reader = new FileReader();
-    reader.onload = () => {
-      setPreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
-
-    onImageSelect(file);
-  }, [onImageSelect]);
+  };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'image/*': ['.jpeg', '.jpg', '.png', '.gif', '.webp']
+      'image/*': ['.jpeg', '.jpg', '.png', '.gif']
     },
-    maxFiles: 1
+    maxSize: 5 * 1024 * 1024, // 5MB
+    multiple: false
   });
 
-  const removeImage = () => {
+  const handleCropComplete = (croppedImage: string) => {
+    // Convert base64 to File
+    fetch(croppedImage)
+      .then(res => res.blob())
+      .then(blob => {
+        const file = new File([blob], selectedFile?.name || 'cropped-image.jpg', {
+          type: 'image/jpeg'
+        });
+        onImageSelect(file);
+        setPreview(croppedImage);
+        setShowCropper(false);
+      });
+  };
+
+  const handleCancelCrop = () => {
+    setShowCropper(false);
     setPreview(null);
-    setError(null);
+    setSelectedFile(null);
   };
 
   return (
-    <div className="w-full max-w-md mx-auto">
-      {preview ? (
-        <div className="relative">
-          <img
-            src={preview}
-            alt="Preview"
-            className="w-full h-48 object-cover rounded-lg"
-          />
-          <button
-            onClick={removeImage}
-            className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
-            aria-label="Remove image"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fillRule="evenodd"
-                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </button>
-        </div>
-      ) : (
+    <div className="w-full">
+      {!preview ? (
         <div
           {...getRootProps()}
-          className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
-            isDragActive
-              ? 'border-blue-500 bg-blue-50'
-              : 'border-gray-300 hover:border-blue-500 hover:bg-blue-50'
+          className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
+            isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'
           }`}
         >
           <input {...getInputProps()} />
-          <div className="flex flex-col items-center">
+          <div className="space-y-2">
             <svg
-              className="w-12 h-12 text-gray-400 mb-2"
-              fill="none"
+              className="mx-auto h-12 w-12 text-gray-400"
               stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 48 48"
+              aria-hidden="true"
             >
               <path
+                d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                strokeWidth={2}
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
               />
             </svg>
             <p className="text-sm text-gray-600">
               {isDragActive
                 ? 'Drop the image here'
-                : 'Drag & drop an image here, or click to select'}
+                : 'Drag and drop an image here, or click to select'}
             </p>
-            <p className="text-xs text-gray-500 mt-1">
-              Supports: JPEG, PNG, GIF, WebP (max 5MB)
-            </p>
+            <p className="text-xs text-gray-500">Supports: JPEG, PNG, GIF (max 5MB)</p>
           </div>
         </div>
+      ) : (
+        <div className="relative">
+          <img
+            src={preview}
+            alt="Preview"
+            className="w-full h-auto rounded-lg"
+          />
+          <button
+            onClick={() => {
+              setPreview(null);
+              setSelectedFile(null);
+            }}
+            className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
       )}
-      {error && (
-        <p className="text-red-500 text-sm mt-2 text-center">{error}</p>
+
+      {showCropper && preview && (
+        <ImageCropper
+          image={preview}
+          onCropComplete={handleCropComplete}
+          onCancel={handleCancelCrop}
+        />
       )}
     </div>
   );

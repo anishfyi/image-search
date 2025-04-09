@@ -108,40 +108,67 @@ export class MockSearchService {
     page: number = 1,
     perPage: number = 8
   ): Promise<ImageSearchResponse> {
-    // Simulate network delay
+    // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    // Filter images based on query
-    const filteredImages = sampleImages.filter(image =>
-      image.title.toLowerCase().includes(query.toLowerCase())
-    );
-
-    // Calculate pagination
     const startIndex = (page - 1) * perPage;
     const endIndex = startIndex + perPage;
-    const paginatedImages = filteredImages.slice(startIndex, endIndex);
+    const paginatedResults = sampleImages.slice(startIndex, endIndex);
 
     return {
-      results: paginatedImages,
-      total: filteredImages.length,
+      results: paginatedResults,
+      total: sampleImages.length,
       page,
-      perPage
+      perPage,
+    };
+  }
+
+  async searchByImage(
+    file: File,
+    page: number = 1,
+    perPage: number = 8
+  ): Promise<ImageSearchResponse> {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // In a real implementation, this would:
+    // 1. Upload the image to a server
+    // 2. Process the image to extract features
+    // 3. Search for similar images
+    // 4. Return the results
+
+    // For now, we'll return a subset of our sample images
+    // and include the uploaded image's name in the results
+    const startIndex = (page - 1) * perPage;
+    const endIndex = startIndex + perPage;
+    const paginatedResults = sampleImages.slice(startIndex, endIndex).map(img => ({
+      ...img,
+      title: `Similar to ${file.name} - ${img.title}`,
+    }));
+
+    return {
+      results: paginatedResults,
+      total: sampleImages.length,
+      page,
+      perPage,
     };
   }
 
   async getSuggestions(query: string): Promise<string[]> {
-    // Simulate network delay
+    // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    // Return suggestions based on the query
-    const suggestions = [
-      `${query} landscape`,
-      `${query} photography`,
-      `${query} wallpaper`,
-      `${query} hd`,
-      `${query} 4k`
+    if (!query) return [];
+
+    // Generate some mock suggestions based on the query
+    const mockSuggestions = [
+      `${query} images`,
+      `${query} photos`,
+      `${query} pictures`,
+      `free ${query} images`,
+      `${query} stock photos`,
     ];
 
-    return suggestions;
+    return mockSuggestions;
   }
 } 

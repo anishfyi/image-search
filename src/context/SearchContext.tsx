@@ -132,23 +132,16 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
   const searchByImage = async (file: File) => {
     setIsLoading(true);
     setError(null);
+    setCurrentPage(1);
+
     try {
-      // In a real implementation, we would upload the image to a server
-      // and get back similar images. For now, we'll use the file name as a query
-      const query = `Similar to ${file.name}`;
-      setQuery(query);
-      const response = await searchService.searchImages(
-        query,
-        currentPage,
-        RESULTS_PER_PAGE
-      );
+      const response = await searchService.searchByImage(file, 1, RESULTS_PER_PAGE);
       setResults(response.results);
       setTotalPages(Math.ceil(response.total / RESULTS_PER_PAGE));
-      addToHistory(query, filters, true);
+      addToHistory(file.name, filters, true);
     } catch (err) {
-      setError('An error occurred during the image search');
-      setResults([]);
-      setTotalPages(0);
+      setError('Failed to search by image. Please try again.');
+      console.error('Image search error:', err);
     } finally {
       setIsLoading(false);
     }
