@@ -76,6 +76,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
   const handleSuggestionSelect = (suggestion: string) => {
     setQuery(suggestion);
+    onSearch(suggestion);
     setShowSuggestions(false);
     setShowHistory(false);
     inputRef.current?.focus();
@@ -121,10 +122,14 @@ const SearchBar: React.FC<SearchBarProps> = ({
               ref={inputRef}
               type="text"
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setShowSuggestions(true);
+              }}
               onFocus={handleInputFocus}
               className="w-full h-12 pl-12 pr-24 text-base text-neutral-900 bg-transparent rounded-full focus:outline-none"
               placeholder="Search images..."
+              disabled={isLoading}
             />
             <div className="absolute right-2 flex items-center space-x-2">
               <VoiceSearch
@@ -136,6 +141,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
                 onClick={() => setShowImageUpload(!showImageUpload)}
                 className="p-2 text-gray-500 hover:text-gray-700"
                 aria-label="Upload image"
+                disabled={isLoading}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -170,7 +176,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
         <div className="flex justify-center mt-8 space-x-3">
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || !query.trim()}
             className="px-6 py-2 text-sm bg-[#f8f9fa] text-[#3c4043] rounded hover:shadow-sm hover:border-[#dadce0] border border-transparent disabled:opacity-50"
           >
             {isLoading ? (
