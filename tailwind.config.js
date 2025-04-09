@@ -34,7 +34,8 @@ export default {
         'google-sm': '0.25rem',
       },
       boxShadow: {
-        'hover': '0 1px 6px rgb(32 33 36 / 28%)',
+        'google': '0 1px 6px rgb(32 33 36 / 28%)',
+        'hover': '0 1px 6px rgb(32 33 36 / 20%)',
         'button': '0 1px 3px rgb(60 64 67 / 30%)',
         'button-sm': '0 1px 1px rgb(0 0 0 / 10%)',
       },

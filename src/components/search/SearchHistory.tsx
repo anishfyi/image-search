@@ -29,12 +29,12 @@ const SearchHistory: React.FC<SearchHistoryProps> = ({ onSelect, className = '' 
   };
 
   return (
-    <div className={`bg-white rounded-lg shadow-lg border border-neutral-border ${className}`}>
-      <div className="flex items-center justify-between p-3 border-b border-neutral-border">
-        <h3 className="text-sm font-medium text-neutral-text">Recent searches</h3>
+    <div className={`bg-white rounded-2xl shadow-google border border-neutral-border ${className}`}>
+      <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-border">
+        <h3 className="text-sm font-medium text-neutral-900">Recent searches</h3>
         <button
           onClick={clearHistory}
-          className="text-neutral-secondary hover:text-neutral-text flex items-center space-x-1 text-sm"
+          className="flex items-center space-x-1.5 text-sm text-neutral-500 hover:text-neutral-700"
           aria-label="Clear all history"
         >
           <TrashIcon className="w-4 h-4" />
@@ -46,22 +46,22 @@ const SearchHistory: React.FC<SearchHistoryProps> = ({ onSelect, className = '' 
           <li key={item.timestamp} className="relative group">
             <button
               onClick={() => onSelect(item.query)}
-              className="w-full px-4 py-2 text-left hover:bg-neutral-hover flex items-center space-x-3"
+              className="w-full px-4 py-2.5 text-left hover:bg-neutral-hover flex items-center space-x-3 group"
             >
-              <ClockIcon className="w-4 h-4 text-neutral-secondary flex-shrink-0" />
+              <ClockIcon className="w-4 h-4 text-neutral-400 flex-shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm text-neutral-text truncate">{item.query}</p>
-                <p className="text-xs text-neutral-secondary">{formatTimestamp(item.timestamp)}</p>
+                <p className="text-sm text-neutral-700 truncate">{item.query}</p>
+                <p className="text-xs text-neutral-400">{formatTimestamp(item.timestamp)}</p>
               </div>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   removeFromHistory(item.timestamp);
                 }}
-                className="opacity-0 group-hover:opacity-100 p-1 hover:bg-neutral-hover rounded-full transition-opacity"
+                className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-neutral-100 rounded-full transition-opacity"
                 aria-label={`Remove "${item.query}" from history`}
               >
-                <XMarkIcon className="w-4 h-4 text-neutral-secondary" />
+                <XMarkIcon className="w-4 h-4 text-neutral-400" />
               </button>
             </button>
           </li>
