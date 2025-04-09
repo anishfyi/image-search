@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { CameraIcon } from '@heroicons/react/24/outline';
+import { CameraIcon, XMarkIcon } from '@heroicons/react/24/outline';
 
 interface ImageSearchProps {
   onImageSelect: (file: File) => void;
@@ -61,6 +61,16 @@ const ImageSearch: React.FC<ImageSearchProps> = ({ onImageSelect, onError }) => 
     }
   };
 
+  const clearPreview = () => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    setPreviewUrl(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   return (
     <div className="relative">
       <input
@@ -77,33 +87,36 @@ const ImageSearch: React.FC<ImageSearchProps> = ({ onImageSelect, onError }) => 
         onDrop={handleDrop}
         className={`flex items-center justify-center w-10 h-10 rounded-full transition-colors ${
           isDragging
-            ? 'bg-blue-100 text-blue-600'
-            : 'hover:bg-neutral-hover text-neutral-secondary'
+            ? 'bg-blue-50 text-blue-600'
+            : 'hover:bg-neutral-100 text-neutral-500'
         }`}
         aria-label="Search by image"
         title="Search by image"
       >
         <CameraIcon className="w-5 h-5" />
       </button>
+
       {previewUrl && (
-        <div className="absolute top-full right-0 mt-2 p-2 bg-white rounded-lg shadow-lg">
-          <img
-            src={previewUrl}
-            alt="Preview"
-            className="w-32 h-32 object-cover rounded"
-          />
-          <button
-            onClick={() => {
-              setPreviewUrl(null);
-              if (fileInputRef.current) {
-                fileInputRef.current.value = '';
-              }
-            }}
-            className="absolute top-1 right-1 text-red-500 hover:text-red-600"
-            aria-label="Remove image"
-          >
-            ×
-          </button>
+        <div className="absolute top-full right-0 mt-2 bg-white rounded-lg shadow-google border border-neutral-border overflow-hidden">
+          <div className="relative">
+            <img
+              src={previewUrl}
+              alt="Search preview"
+              className="w-[240px] h-[180px] object-cover"
+            />
+            <button
+              onClick={clearPreview}
+              className="absolute top-2 right-2 p-1 bg-black/40 hover:bg-black/60 rounded-full text-white transition-colors"
+              aria-label="Remove image"
+            >
+              <XMarkIcon className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="p-3 border-t border-neutral-border">
+            <p className="text-xs text-neutral-500">
+              Search with this image
+            </p>
+          </div>
         </div>
       )}
     </div>
