@@ -17,7 +17,15 @@ const Footer: React.FC = () => {
             itemClassName="text-sm text-neutral-secondary hover:text-neutral-text"
           />
           <div className="text-sm text-neutral-secondary">
-            © {new Date().getFullYear()} Google Clone
+            © {new Date().getFullYear()} | Made with <span className="text-red-500">❤️</span> by{' '}
+            <a 
+              href="https://github.com/anishfyi" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-primary-blue hover:underline"
+            >
+              anishfyi
+            </a>
           </div>
         </div>
       </div>
