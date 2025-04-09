@@ -4,6 +4,8 @@ import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import SearchSuggestions from './SearchSuggestions';
 import VoiceSearch from './VoiceSearch';
 import ImageSearch from './ImageSearch';
+import SearchHistory from './SearchHistory';
+import { useSearch } from '../../context/SearchContext';
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
@@ -16,11 +18,12 @@ const SearchBar: React.FC<SearchBarProps> = ({
   onImageSearch,
   initialQuery = '' 
 }) => {
-  const [query, setQuery] = useState(initialQuery);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const [suggestions, setSuggestions] = useState<Array<{ text: string; type: 'history' | 'suggestion' }>>([]);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { query, setQuery, searchHistory } = useSearch();
 
   // Mock suggestions - in a real app, these would come from an API
   const mockSuggestions = [
@@ -34,6 +37,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setShowSuggestions(false);
+        setShowHistory(false);
       }
     };
 
@@ -49,9 +53,11 @@ const SearchBar: React.FC<SearchBarProps> = ({
       );
       setSuggestions(filtered);
       setShowSuggestions(true);
+      setShowHistory(false);
     } else {
       setSuggestions([]);
       setShowSuggestions(false);
+      setShowHistory(true);
     }
   }, [query]);
 
@@ -60,12 +66,14 @@ const SearchBar: React.FC<SearchBarProps> = ({
     if (query.trim()) {
       onSearch(query.trim());
       setShowSuggestions(false);
+      setShowHistory(false);
     }
   };
 
   const handleSuggestionSelect = (suggestion: string) => {
     setQuery(suggestion);
     setShowSuggestions(false);
+    setShowHistory(false);
     inputRef.current?.focus();
   };
 
@@ -84,6 +92,16 @@ const SearchBar: React.FC<SearchBarProps> = ({
     // You could show a toast notification here
   };
 
+  const handleInputFocus = () => {
+    if (query.trim()) {
+      setShowSuggestions(true);
+      setShowHistory(false);
+    } else {
+      setShowSuggestions(false);
+      setShowHistory(true);
+    }
+  };
+
   return (
     <div ref={containerRef} className="relative w-full max-w-2xl mx-auto">
       <form onSubmit={handleSubmit}>
@@ -96,7 +114,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            onFocus={() => query.trim() && setShowSuggestions(true)}
+            onFocus={handleInputFocus}
             className="w-full h-12 pl-12 pr-12 text-base text-neutral-text bg-white rounded-full border border-neutral-border hover:shadow-hover focus:shadow-hover focus:outline-none transition-all duration-200"
             placeholder="Search images..."
           />
@@ -115,6 +133,12 @@ const SearchBar: React.FC<SearchBarProps> = ({
           <SearchSuggestions
             suggestions={suggestions}
             onSelect={handleSuggestionSelect}
+          />
+        )}
+        {showHistory && searchHistory.length > 0 && (
+          <SearchHistory
+            onSelect={handleSuggestionSelect}
+            className="absolute top-full left-0 right-0 mt-1 z-10"
           />
         )}
         <div className="flex justify-center mt-6 space-x-4">

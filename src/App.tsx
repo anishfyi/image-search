@@ -1,25 +1,30 @@
-import React, { useState } from 'react';
-import MainLayout from './components/layout/MainLayout';
+import React from 'react';
 import SearchBar from './components/search/SearchBar';
-import GoogleLogo from './components/common/GoogleLogo';
+import { SearchProvider } from './context/SearchContext';
+import MainLayout from './components/layout/MainLayout';
 
-function App() {
-  const [searchQuery, setSearchQuery] = useState('');
-
+const App: React.FC = () => {
   const handleSearch = (query: string) => {
-    setSearchQuery(query);
-    // TODO: Implement search functionality
     console.log('Searching for:', query);
   };
 
+  const handleImageSearch = (file: File) => {
+    console.log('Image search with file:', file.name);
+  };
+
   return (
-    <MainLayout>
-      <div className="flex flex-col items-center space-y-8">
-        <GoogleLogo size="lg" />
-        <SearchBar onSearch={handleSearch} />
-      </div>
-    </MainLayout>
+    <SearchProvider>
+      <MainLayout>
+        <div className="flex flex-col items-center justify-center min-h-screen py-12 px-4">
+          <h1 className="text-4xl font-bold mb-8">Google Image Search</h1>
+          <SearchBar
+            onSearch={handleSearch}
+            onImageSearch={handleImageSearch}
+          />
+        </div>
+      </MainLayout>
+    </SearchProvider>
   );
-}
+};
 
 export default App;
