@@ -11,20 +11,24 @@
   }
 
   body {
-    @apply m-0 flex min-h-screen min-w-[320px] place-items-center bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100;
-  }
-
-  a {
-    @apply font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300;
-  }
-
-  h1 {
-    @apply text-4xl font-bold leading-tight;
+    @apply bg-white text-neutral-text font-roboto;
   }
 }
 
 @layer components {
-  .btn {
-    @apply rounded-lg border border-transparent bg-gray-800 px-6 py-3 text-base font-medium text-white transition-colors hover:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:bg-gray-700;
+  .search-bar {
+    @apply flex items-center w-full max-w-[584px] bg-white rounded-full border border-neutral-border hover:shadow-hover focus-within:shadow-hover hover:border-transparent focus-within:border-transparent;
   }
-}
+  
+  .primary-button {
+    @apply px-[23px] py-[9px] text-white bg-primary-blue rounded-[4px] hover:bg-primary-hover hover:shadow-button transition-all duration-200;
+  }
+  
+  .secondary-button {
+    @apply h-9 px-4 min-w-[54px] text-[14px] text-neutral-text bg-neutral-hover rounded-[4px] border border-neutral-hover hover:border-neutral-border hover:shadow-button-sm;
+  }
+  
+  .icon-button {
+    @apply flex items-center justify-center w-10 h-10 rounded-full hover:bg-neutral-hover transition-colors;
+  }
+} 
