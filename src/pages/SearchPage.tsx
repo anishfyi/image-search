@@ -20,9 +20,9 @@ const SearchPage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center min-h-[calc(100vh-64px)] px-4">
-      <div className="w-full max-w-[584px] mx-auto mb-8">
-        <div className="flex justify-center mb-6">
+    <div className="flex items-center justify-center min-h-screen w-full p-4">
+      <div className="w-full max-w-[584px] -mt-[10vh] md:-mt-[15vh]">
+        <div className="flex justify-center mb-8">
           <GoogleLogo size="lg" />
         </div>
         <SearchBar
