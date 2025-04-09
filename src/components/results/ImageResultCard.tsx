@@ -16,13 +16,13 @@ const ImageResultCard: React.FC<ImageResultCardProps> = ({ result }) => {
           loading="lazy"
         />
       </div>
-      <div className="p-3">
-        <h3 className="text-sm font-medium text-gray-900 line-clamp-2">
+      <div className="p-2 sm:p-3">
+        <h3 className="text-xs sm:text-sm font-medium text-gray-900 line-clamp-2">
           {result.title}
         </h3>
-        <div className="mt-2 text-xs text-gray-500">
-          <p>{result.source}</p>
-          <p>{result.size} • {result.type}</p>
+        <div className="mt-1 sm:mt-2 text-[10px] sm:text-xs text-gray-500 space-y-0.5">
+          <p className="truncate">{result.source}</p>
+          <p className="truncate">{result.size} • {result.type}</p>
         </div>
       </div>
     </div>
