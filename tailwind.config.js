@@ -20,8 +20,17 @@ export default {
           900: '#0c4a6e',
         },
       },
+      fontFamily: {
+        sans: ['system-ui', 'Avenir', 'Helvetica', 'Arial', 'sans-serif'],
+      },
     },
   },
   plugins: [],
+  future: {
+    hoverOnlyWhenSupported: true,
+  },
+  corePlugins: {
+    preflight: true,
+  },
 }
 
