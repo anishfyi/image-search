@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from 'react';
 import { MockSearchService } from '../services/mockSearchService';
 import { ImageResult, ImageSearchResponse } from '../types/image';
 
@@ -21,8 +21,8 @@ interface SearchContextType {
   setQuery: (query: string) => void;
   filters: SearchFilters;
   setFilters: (filters: SearchFilters) => void;
-  search: () => void;
-  searchByImage: (file: File) => void;
+  search: () => Promise<void>;
+  searchByImage: (file: File) => Promise<ImageResult>;
   isLoading: boolean;
   error: string | null;
   searchHistory: SearchHistoryItem[];
@@ -106,46 +106,90 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
     setSearchHistory([]);
   };
 
-  const search = async () => {
+  const search = useCallback(async () => {
     if (!query.trim()) return;
 
     setIsLoading(true);
     setError(null);
+
     try {
-      const response = await searchService.searchImages(
-        query.trim(),
-        currentPage,
-        RESULTS_PER_PAGE
-      );
-      setResults(response.results);
-      setTotalPages(Math.ceil(response.total / RESULTS_PER_PAGE));
-      addToHistory(query.trim(), filters);
+      // Mock API call
+      const mockResults: ImageResult[] = [
+        {
+          id: '1',
+          url: 'https://example.com/image1.jpg',
+          thumbnailUrl: 'https://example.com/thumb1.jpg',
+          title: 'Sample Image 1',
+          source: 'Example.com',
+          width: 800,
+          height: 600,
+          format: 'JPEG',
+          similarImages: [
+            { url: 'https://example.com/similar1.jpg', similarity: 0.95 },
+            { url: 'https://example.com/similar2.jpg', similarity: 0.92 }
+          ],
+          products: [
+            {
+              name: 'Sample Product',
+              price: '$99.99',
+              merchant: 'Amazon',
+              merchantLogo: 'https://example.com/amazon-logo.png'
+            }
+          ]
+        }
+      ];
+
+      setResults(mockResults);
     } catch (err) {
-      setError('An error occurred during the search');
-      setResults([]);
-      setTotalPages(0);
+      setError('Failed to perform search. Please try again.');
+      console.error('Search error:', err);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [query]);
 
-  const searchByImage = async (file: File) => {
+  const searchByImage = useCallback(async (file: File): Promise<ImageResult> => {
     setIsLoading(true);
     setError(null);
-    setCurrentPage(1);
 
     try {
-      const response = await searchService.searchByImage(file, 1, RESULTS_PER_PAGE);
-      setResults(response.results);
-      setTotalPages(Math.ceil(response.total / RESULTS_PER_PAGE));
-      addToHistory(file.name, filters, true);
+      // Mock image analysis
+      const mockResult: ImageResult = {
+        id: '1',
+        url: URL.createObjectURL(file),
+        thumbnailUrl: URL.createObjectURL(file),
+        title: 'Analyzed Image',
+        source: 'Google Lens',
+        width: 800,
+        height: 600,
+        format: file.type.split('/')[1].toUpperCase(),
+        similarImages: [
+          { url: 'https://example.com/similar1.jpg', similarity: 0.95 },
+          { url: 'https://example.com/similar2.jpg', similarity: 0.92 }
+        ],
+        products: [
+          {
+            name: 'Sample Product',
+            price: '$99.99',
+            merchant: 'Amazon',
+            merchantLogo: 'https://example.com/amazon-logo.png'
+          }
+        ],
+        detectedText: 'Sample text detected in image',
+        translation: 'Translated text',
+        problemAnalysis: 'This appears to be a math problem about...',
+        solution: 'The solution to the problem is...'
+      };
+
+      return mockResult;
     } catch (err) {
-      setError('Failed to search by image. Please try again.');
-      console.error('Image search error:', err);
+      setError('Failed to analyze image. Please try again.');
+      console.error('Image analysis error:', err);
+      throw err;
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   const getSuggestions = async (query: string) => {
     if (!query.trim()) {

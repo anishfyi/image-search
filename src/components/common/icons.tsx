@@ -5,7 +5,10 @@ import {
   TrashIcon,
   ChevronDownIcon,
   MagnifyingGlassIcon,
-  CameraIcon
+  CameraIcon,
+  CalendarIcon,
+  CloudIcon,
+  NewspaperIcon
 } from '@heroicons/react/24/outline';
 
 // Export only the icons we use
@@ -16,5 +19,8 @@ export {
   TrashIcon,
   ChevronDownIcon,
   MagnifyingGlassIcon,
-  CameraIcon
+  CameraIcon,
+  CalendarIcon,
+  CloudIcon,
+  NewspaperIcon
 }; 

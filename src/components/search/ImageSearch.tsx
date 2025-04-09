@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { CameraIcon, XMarkIcon } from '../common/icons';
+import GoogleLens from './GoogleLens';
 
 interface ImageSearchProps {
   onImageSelect: (file: File) => void;
@@ -9,9 +10,17 @@ interface ImageSearchProps {
 const ImageSearch: React.FC<ImageSearchProps> = ({ onImageSelect, onError }) => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [showLens, setShowLens] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = (file: File) => {
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleImageSelect(file);
+    }
+  };
+
+  const handleImageSelect = (file: File) => {
     if (!file.type.startsWith('image/')) {
       onError?.('Please select an image file');
       return;
@@ -22,12 +31,13 @@ const ImageSearch: React.FC<ImageSearchProps> = ({ onImageSelect, onError }) => 
       return;
     }
 
-    // Create preview URL
     const url = URL.createObjectURL(file);
     setPreviewUrl(url);
-
-    // Pass the file to parent component
     onImageSelect(file);
+  };
+
+  const handleClick = () => {
+    setShowLens(true);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -43,29 +53,17 @@ const ImageSearch: React.FC<ImageSearchProps> = ({ onImageSelect, onError }) => 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-
     const file = e.dataTransfer.files[0];
     if (file) {
-      handleFileSelect(file);
-    }
-  };
-
-  const handleClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      handleFileSelect(file);
+      handleImageSelect(file);
     }
   };
 
   const clearPreview = () => {
     if (previewUrl) {
       URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
     }
-    setPreviewUrl(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -118,6 +116,12 @@ const ImageSearch: React.FC<ImageSearchProps> = ({ onImageSelect, onError }) => 
             </p>
           </div>
         </div>
+      )}
+
+      {showLens && (
+        <GoogleLens
+          onClose={() => setShowLens(false)}
+        />
       )}
     </div>
   );

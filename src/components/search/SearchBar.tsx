@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect, KeyboardEvent } from 'react';
-import { MagnifyingGlassIcon } from '../common/icons';
+import { MagnifyingGlassIcon, MicrophoneIcon, CameraIcon } from '../common/icons';
 import SearchSuggestions from './SearchSuggestions';
 import VoiceSearch from './VoiceSearch';
 import SearchHistory from './SearchHistory';
 import { useSearch } from '../../context/SearchContext';
 import ImageUpload from './ImageUpload';
+import ImageSearch from './ImageSearch';
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
@@ -30,6 +31,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const { query, setQuery, searchHistory } = useSearch();
   const [showImageUpload, setShowImageUpload] = useState(false);
+  const [showVoiceSearch, setShowVoiceSearch] = useState(false);
 
   // Mock suggestions - in a real app, these would come from an API
   const mockSuggestions = [
@@ -67,6 +69,12 @@ const SearchBar: React.FC<SearchBarProps> = ({
     }
     setSelectedSuggestionIndex(-1);
   }, [query]);
+
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,7 +133,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
   const handleVoiceResult = (text: string) => {
     setQuery(text);
-    inputRef.current?.focus();
+    onSearch(text);
   };
 
   const handleVoiceError = (error: string) => {
@@ -191,10 +199,14 @@ const SearchBar: React.FC<SearchBarProps> = ({
               aria-autocomplete="list"
             />
             <div className="flex items-center space-x-2 pr-4">
-              <VoiceSearch
-                onResult={handleVoiceResult}
-                onError={handleVoiceError}
-              />
+              <button
+                type="button"
+                onClick={() => setShowVoiceSearch(true)}
+                className="p-2 text-gray-500 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                aria-label="Voice search"
+              >
+                <MicrophoneIcon className="w-5 h-5" />
+              </button>
               <button
                 type="button"
                 onClick={() => setShowImageUpload(!showImageUpload)}
@@ -203,21 +215,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
                 aria-expanded={showImageUpload}
                 aria-controls="image-upload-section"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
+                <CameraIcon className="w-5 h-5" />
               </button>
             </div>
           </div>
@@ -323,6 +321,13 @@ const SearchBar: React.FC<SearchBarProps> = ({
         >
           <ImageUpload onImageSelect={handleImageSelect} />
         </div>
+      )}
+
+      {showVoiceSearch && (
+        <VoiceSearch
+          onResult={handleVoiceResult}
+          onClose={() => setShowVoiceSearch(false)}
+        />
       )}
     </div>
   );
