@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDownIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon } from '../common/icons';
 import { useSearch } from '../../context/SearchContext';
 
 interface FilterOption {

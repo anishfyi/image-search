@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, KeyboardEvent } from 'react';
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { MagnifyingGlassIcon } from '../common/icons';
 import SearchSuggestions from './SearchSuggestions';
 import VoiceSearch from './VoiceSearch';
 import SearchHistory from './SearchHistory';

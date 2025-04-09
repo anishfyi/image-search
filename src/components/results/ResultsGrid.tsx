@@ -1,6 +1,6 @@
 import React, { useCallback, useRef, useState, KeyboardEvent } from 'react';
 import { ImageResult } from '../../types/image';
-import ImageViewer from './ImageViewer';
+import LazyImageViewer from './LazyImageViewer';
 
 interface ResultsGridProps {
   results: ImageResult[];
@@ -183,7 +183,7 @@ const ResultsGrid: React.FC<ResultsGridProps> = ({ results, loading, error }) =>
           </div>
         ))}
       </div>
-      <ImageViewer
+      <LazyImageViewer
         image={selectedImage}
         onClose={() => setSelectedImage(null)}
       />

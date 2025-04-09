@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { CameraIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { CameraIcon, XMarkIcon } from '../common/icons';
 
 interface ImageSearchProps {
   onImageSelect: (file: File) => void;
