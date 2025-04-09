@@ -44,9 +44,9 @@ const SearchHistory: React.FC<SearchHistoryProps> = ({ onSelect, className = '' 
       <ul className="py-2">
         {searchHistory.map((item) => (
           <li key={item.timestamp} className="relative group">
-            <button
+            <div
               onClick={() => onSelect(item.query)}
-              className="w-full px-4 py-2.5 text-left hover:bg-neutral-hover flex items-center space-x-3 group"
+              className="w-full px-4 py-2.5 text-left hover:bg-neutral-hover flex items-center space-x-3 group cursor-pointer"
             >
               <ClockIcon className="w-4 h-4 text-neutral-400 flex-shrink-0" />
               <div className="flex-1 min-w-0">
@@ -63,7 +63,7 @@ const SearchHistory: React.FC<SearchHistoryProps> = ({ onSelect, className = '' 
               >
                 <XMarkIcon className="w-4 h-4 text-neutral-400" />
               </button>
-            </button>
+            </div>
           </li>
         ))}
       </ul>
