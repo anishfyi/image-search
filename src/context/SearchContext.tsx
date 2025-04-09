@@ -13,6 +13,7 @@ interface SearchHistoryItem {
   query: string;
   timestamp: number;
   filters: SearchFilters;
+  isImageSearch?: boolean;
 }
 
 interface SearchContextType {
@@ -21,6 +22,7 @@ interface SearchContextType {
   filters: SearchFilters;
   setFilters: (filters: SearchFilters) => void;
   search: () => void;
+  searchByImage: (file: File) => void;
   isLoading: boolean;
   error: string | null;
   searchHistory: SearchHistoryItem[];
@@ -77,15 +79,18 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
     localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(searchHistory));
   }, [searchHistory]);
 
-  const addToHistory = (query: string, filters: SearchFilters) => {
+  const addToHistory = (query: string, filters: SearchFilters, isImageSearch = false) => {
     const newItem: SearchHistoryItem = {
       query,
       filters,
       timestamp: Date.now(),
+      isImageSearch,
     };
 
     setSearchHistory(prevHistory => {
-      const filteredHistory = prevHistory.filter(item => item.query !== query);
+      const filteredHistory = prevHistory.filter(item => 
+        item.query !== query || item.isImageSearch !== isImageSearch
+      );
       const newHistory = [newItem, ...filteredHistory].slice(0, MAX_HISTORY_ITEMS);
       return newHistory;
     });
@@ -124,6 +129,31 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
     }
   };
 
+  const searchByImage = async (file: File) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      // In a real implementation, we would upload the image to a server
+      // and get back similar images. For now, we'll use the file name as a query
+      const query = `Similar to ${file.name}`;
+      setQuery(query);
+      const response = await searchService.searchImages(
+        query,
+        currentPage,
+        RESULTS_PER_PAGE
+      );
+      setResults(response.results);
+      setTotalPages(Math.ceil(response.total / RESULTS_PER_PAGE));
+      addToHistory(query, filters, true);
+    } catch (err) {
+      setError('An error occurred during the image search');
+      setResults([]);
+      setTotalPages(0);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const getSuggestions = async (query: string) => {
     if (!query.trim()) {
       setSuggestions([]);
@@ -146,6 +176,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
         filters,
         setFilters,
         search,
+        searchByImage,
         isLoading,
         error,
         searchHistory,

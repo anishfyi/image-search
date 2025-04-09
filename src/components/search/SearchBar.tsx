@@ -5,10 +5,11 @@ import VoiceSearch from './VoiceSearch';
 import ImageSearch from './ImageSearch';
 import SearchHistory from './SearchHistory';
 import { useSearch } from '../../context/SearchContext';
+import ImageUpload from './ImageUpload';
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
-  onImageSearch?: (file: File) => void;
+  onImageSearch: (file: File) => void;
   initialQuery?: string;
 }
 
@@ -23,6 +24,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const { query, setQuery, searchHistory } = useSearch();
+  const [showImageUpload, setShowImageUpload] = useState(false);
 
   // Mock suggestions - in a real app, these would come from an API
   const mockSuggestions = [
@@ -98,6 +100,11 @@ const SearchBar: React.FC<SearchBarProps> = ({
     }
   };
 
+  const handleImageSelect = (file: File) => {
+    onImageSearch(file);
+    setShowImageUpload(false);
+  };
+
   return (
     <div ref={containerRef} className="w-full">
       <form onSubmit={handleSubmit} className="flex flex-col items-center">
@@ -120,10 +127,27 @@ const SearchBar: React.FC<SearchBarProps> = ({
                 onResult={handleVoiceResult}
                 onError={handleVoiceError}
               />
-              <ImageSearch
-                onImageSelect={onImageSearch || (() => {})}
-                onError={handleImageError}
-              />
+              <button
+                type="button"
+                onClick={() => setShowImageUpload(!showImageUpload)}
+                className="p-2 text-gray-500 hover:text-gray-700"
+                aria-label="Upload image"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
+              </button>
             </div>
           </div>
           {showSuggestions && (
@@ -154,6 +178,12 @@ const SearchBar: React.FC<SearchBarProps> = ({
           </button>
         </div>
       </form>
+
+      {showImageUpload && (
+        <div className="mt-4">
+          <ImageUpload onImageSelect={handleImageSelect} />
+        </div>
+      )}
     </div>
   );
 };
