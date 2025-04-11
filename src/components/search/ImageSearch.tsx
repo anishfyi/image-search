@@ -100,7 +100,11 @@ const ImageSearch: React.FC<ImageSearchProps> = ({ onImageSelect, onError }) => 
         className="hidden"
       />
       <button
-        onClick={handleClick}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          handleClick();
+        }}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
@@ -109,6 +113,7 @@ const ImageSearch: React.FC<ImageSearchProps> = ({ onImageSelect, onError }) => 
             ? 'bg-[#e8f0fe] text-[#1a73e8]'
             : 'hover:bg-[#f8f9fa] text-[#4285f4]'
         }`}
+        type="button"
         aria-label="Search by image"
         title="Search by image"
       >

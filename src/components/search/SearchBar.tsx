@@ -81,11 +81,13 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     if (query.trim()) {
       onSearch(query.trim());
       setShowSuggestions(false);
       setShowHistory(false);
       setSelectedSuggestionIndex(-1);
+      inputRef.current?.blur();
     }
   };
 
@@ -99,6 +101,18 @@ const SearchBar: React.FC<SearchBarProps> = ({
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (selectedSuggestionIndex !== -1) {
+        onSearch(suggestions[selectedSuggestionIndex].text);
+        setShowSuggestions(false);
+        setShowHistory(false);
+      } else if (query.trim()) {
+        handleSubmit(e as any);
+      }
+      return;
+    }
+
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
       e.preventDefault();
       const direction = e.key === 'ArrowDown' ? 1 : -1;
@@ -109,11 +123,6 @@ const SearchBar: React.FC<SearchBarProps> = ({
           setQuery(suggestions[newIndex].text);
         }
       }
-    } else if (e.key === 'Enter' && selectedSuggestionIndex !== -1) {
-      e.preventDefault();
-      onSearch(suggestions[selectedSuggestionIndex].text);
-      setShowSuggestions(false);
-      setShowHistory(false);
     }
   };
 
