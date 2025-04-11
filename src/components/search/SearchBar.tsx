@@ -37,10 +37,16 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
   // Mock suggestions - in a real app, these would come from an API
   const mockSuggestions = [
-    { text: 'nature', type: 'suggestion' as const },
-    { text: 'landscape', type: 'suggestion' as const },
-    { text: 'mountains', type: 'history' as const },
-    { text: 'ocean', type: 'history' as const },
+    { text: 'nature photography', type: 'suggestion' as const },
+    { text: 'nature wallpaper hd', type: 'suggestion' as const },
+    { text: 'natural scenery', type: 'suggestion' as const },
+    { text: 'nature background', type: 'suggestion' as const },
+    { text: 'nature images free download', type: 'suggestion' as const },
+    { text: 'beautiful nature', type: 'suggestion' as const },
+    { text: 'landscape photography', type: 'suggestion' as const },
+    { text: 'landscape wallpaper', type: 'suggestion' as const },
+    { text: 'mountain scenery', type: 'suggestion' as const },
+    { text: 'sunset images', type: 'suggestion' as const }
   ];
 
   useEffect(() => {
@@ -59,9 +65,11 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
   useEffect(() => {
     if (query.trim()) {
-      const filtered = mockSuggestions.filter(suggestion =>
-        suggestion.text.toLowerCase().includes(query.toLowerCase())
-      );
+      const filtered = mockSuggestions
+        .filter(suggestion =>
+          suggestion.text.toLowerCase().includes(query.toLowerCase())
+        )
+        .slice(0, 10); // Limit to 10 suggestions
       setSuggestions(filtered);
       setShowSuggestions(true);
       setShowHistory(false);
@@ -160,7 +168,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           isFocused 
             ? 'border-transparent shadow-[0_1px_6px_rgba(32,33,36,0.28)] hover:shadow-[0_1px_6px_rgba(32,33,36,0.28)]' 
             : 'border-[#dfe1e5] hover:shadow-[0_1px_6px_rgba(32,33,36,0.28)] hover:border-[#dfe1e5]'
-        } transition-all duration-200 focus-within:outline-none`}
+        } transition-all duration-200 focus-within:shadow-[0_1px_6px_rgba(32,33,36,0.28)]`}
       >
         <div className="flex items-center pl-[14px] pr-[13px]">
           <MagnifyingGlassIcon className="w-5 h-5 text-[#9aa0a6]" />
@@ -176,7 +184,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
             setIsFocused(true);
             setShowHistory(true);
           }}
-          className="flex-1 h-[46px] bg-transparent text-[16px] leading-[22px] tracking-[0.1px] text-[#202124] outline-none placeholder-[#9aa0a6] px-0 border-none focus:ring-0 focus:outline-none appearance-none"
+          className="flex-1 h-[46px] bg-transparent text-[16px] leading-[22px] tracking-[0.1px] text-[#202124] outline-none placeholder-[#9aa0a6] px-0 border-none focus:ring-0 focus:outline-none appearance-none min-w-0"
           placeholder="Search images"
           autoComplete="off"
           aria-label="Search images"
@@ -186,24 +194,24 @@ const SearchBar: React.FC<SearchBarProps> = ({
           <button
             type="button"
             onClick={() => setQuery('')}
-            className="p-[9px] mx-[6px] hover:bg-[#f8f9fa] rounded-full transition-colors"
+            className="p-[6px] mx-[2px] hover:bg-[#f8f9fa] rounded-full transition-colors flex-shrink-0"
             aria-label="Clear search input"
           >
-            <XMarkIcon className="w-[20px] h-[20px] text-[#70757a]" />
+            <XMarkIcon className="w-[18px] h-[18px] text-[#70757a]" />
           </button>
         )}
 
-        <div className="flex items-center gap-2 pr-[8px] pl-[7px] min-w-[88px]">
+        <div className="flex items-center gap-1 pr-[6px] pl-[4px] flex-shrink-0">
           <button
             type="button"
             onClick={() => setShowVoiceSearch(true)}
-            className="p-[9px] hover:bg-[#f8f9fa] rounded-full transition-colors group"
+            className="p-[6px] hover:bg-[#f8f9fa] rounded-full transition-colors group flex-shrink-0"
             aria-label="Search by voice"
           >
-            <MicrophoneIcon className="w-6 h-6 text-[#4285f4] group-hover:text-[#1a73e8]" />
+            <MicrophoneIcon className="w-5 h-5 text-[#4285f4] group-hover:text-[#1a73e8]" />
           </button>
 
-          <div className="h-[24px] mx-[3px] border-l border-[#dfe1e5]" />
+          <div className="h-[20px] mx-[2px] border-l border-[#dfe1e5]" />
 
           <ImageSearch 
             onImageSelect={onImageSearch} 
@@ -212,32 +220,19 @@ const SearchBar: React.FC<SearchBarProps> = ({
         </div>
       </form>
 
-      {/* Suggestions/History Dropdown */}
       {(showSuggestions || showHistory) && (
-        <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white rounded-[24px] shadow-[0_2px_6px_rgba(32,33,36,0.28)] border border-[#dfe1e5] overflow-hidden">
-          {showHistory && searchHistory.length > 0 && !query && (
-            <SearchHistory
-              onSelect={(text) => {
-                setQuery(text);
-                onSearch(text);
-                setShowHistory(false);
-              }}
-              onClear={() => {
-                clearHistory();
-                setShowHistory(false);
-              }}
-            />
-          )}
-          
+        <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-40 bg-white rounded-[24px] shadow-[0_2px_6px_rgba(32,33,36,0.28)] border border-[#dfe1e5] overflow-hidden transition-all duration-200 ease-in-out transform origin-top">
           {showSuggestions && suggestions.length > 0 && (
             <SearchSuggestions
               suggestions={suggestions}
+              onSelect={handleSuggestionSelect}
               selectedIndex={selectedSuggestionIndex}
-              onSelect={(text) => {
-                setQuery(text);
-                onSearch(text);
-                setShowSuggestions(false);
-              }}
+            />
+          )}
+          {showHistory && searchHistory.length > 0 && (
+            <SearchHistory
+              onSelect={handleSuggestionSelect}
+              onClear={clearHistory}
             />
           )}
         </div>
