@@ -1,86 +1,57 @@
 import React from 'react';
-import { ClockIcon, XMarkIcon, TrashIcon } from '../common/icons';
+import { ClockIcon, XMarkIcon } from '../common/icons';
 import { useSearch } from '../../context/SearchContext';
 
 interface SearchHistoryProps {
   onSelect: (query: string) => void;
+  onClear: () => void;
   className?: string;
-  selectedIndex: number;
 }
 
 const SearchHistory: React.FC<SearchHistoryProps> = ({ 
   onSelect, 
-  className = '',
-  selectedIndex 
+  onClear,
+  className = ''
 }) => {
-  const { searchHistory, removeFromHistory, clearHistory } = useSearch();
+  const { searchHistory, removeFromHistory } = useSearch();
 
   if (searchHistory.length === 0) return null;
 
-  const formatTimestamp = (timestamp: number) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-
-    if (diffInHours < 24) {
-      if (diffInHours < 1) {
-        const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
-        return `${diffInMinutes} minute${diffInMinutes === 1 ? '' : 's'} ago`;
-      }
-      return `${diffInHours} hour${diffInHours === 1 ? '' : 's'} ago`;
-    }
-
-    return date.toLocaleDateString();
-  };
-
   return (
-    <div 
-      className={`bg-white rounded-2xl shadow-google border border-neutral-border ${className}`}
-      role="listbox"
-      aria-label="Search history"
-    >
-      <div className="flex items-center justify-between px-4 py-3 border-b border-neutral-border">
-        <h3 className="text-sm font-medium text-neutral-900">Recent searches</h3>
+    <div className={`py-[6px] ${className}`}>
+      <div className="flex items-center justify-between px-4 py-[6px] mb-[2px]">
+        <h3 className="text-[14px] leading-[22px] text-[#70757a]">Recent searches</h3>
         <button
-          onClick={clearHistory}
-          className="flex items-center space-x-1.5 text-sm text-neutral-500 hover:text-neutral-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          onClick={onClear}
+          className="text-[14px] leading-[22px] text-[#70757a] hover:text-[#202124] focus:outline-none transition-colors"
           aria-label="Clear all history"
         >
-          <TrashIcon className="w-4 h-4" aria-hidden="true" />
-          <span>Clear all</span>
+          Clear all
         </button>
       </div>
-      <ul className="py-2">
-        {searchHistory.map((item, index) => (
+      <ul className="py-[6px]">
+        {searchHistory.map((item) => (
           <li 
             key={item.timestamp}
             className="relative group"
-            role="option"
-            aria-selected={index === selectedIndex}
           >
-            <div
+            <button
               onClick={() => onSelect(item.query)}
-              className={`w-full px-4 py-2.5 text-left hover:bg-neutral-hover flex items-center space-x-3 group cursor-pointer ${
-                index === selectedIndex ? 'bg-neutral-hover' : ''
-              }`}
-              id={`history-${index}`}
+              className="w-full px-4 py-[10px] text-left hover:bg-[#f8f9fa] flex items-center gap-3 group transition-colors"
             >
-              <ClockIcon className="w-4 h-4 text-neutral-400 flex-shrink-0" aria-hidden="true" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm text-neutral-700 truncate">{item.query}</p>
-                <p className="text-xs text-neutral-400">{formatTimestamp(item.timestamp)}</p>
-              </div>
+              <ClockIcon className="w-5 h-5 text-[#9aa0a6] flex-shrink-0" aria-hidden="true" />
+              <span className="flex-1 text-[14px] leading-[20px] text-[#202124] truncate pr-2">{item.query}</span>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   removeFromHistory(item.timestamp);
                 }}
-                className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-neutral-100 rounded-full transition-opacity focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="opacity-0 group-hover:opacity-100 p-[6px] hover:bg-[#f1f3f4] rounded-full transition-all"
                 aria-label={`Remove "${item.query}" from history`}
               >
-                <XMarkIcon className="w-4 h-4 text-neutral-400" aria-hidden="true" />
+                <XMarkIcon className="w-[18px] h-[18px] text-[#70757a]" />
               </button>
-            </div>
+            </button>
           </li>
         ))}
       </ul>

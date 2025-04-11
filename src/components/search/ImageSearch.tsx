@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { CameraIcon, XMarkIcon } from '../common/icons';
 import GoogleLens from './GoogleLens';
+import { NativeService } from '../../services/nativeService';
 
 interface ImageSearchProps {
   onImageSelect: (file: File) => void;
@@ -12,6 +13,7 @@ const ImageSearch: React.FC<ImageSearchProps> = ({ onImageSelect, onError }) => 
   const [isDragging, setIsDragging] = useState(false);
   const [showLens, setShowLens] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const nativeService = NativeService.getInstance();
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -36,8 +38,27 @@ const ImageSearch: React.FC<ImageSearchProps> = ({ onImageSelect, onError }) => 
     onImageSelect(file);
   };
 
-  const handleClick = () => {
-    setShowLens(true);
+  const handleClick = async () => {
+    try {
+      const hasPermissions = await nativeService.checkPermissions();
+      if (!hasPermissions) {
+        onError?.('Camera permissions are required');
+        return;
+      }
+      
+      const imageUrl = await nativeService.takePicture();
+      if (imageUrl) {
+        setPreviewUrl(imageUrl);
+        // Convert URL to File object
+        const response = await fetch(imageUrl);
+        const blob = await response.blob();
+        const file = new File([blob], 'camera-image.jpg', { type: 'image/jpeg' });
+        onImageSelect(file);
+      }
+    } catch (error) {
+      onError?.('Failed to access camera. Please try again.');
+      console.error('Camera error:', error);
+    }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -83,19 +104,19 @@ const ImageSearch: React.FC<ImageSearchProps> = ({ onImageSelect, onError }) => 
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        className={`flex items-center justify-center w-10 h-10 rounded-full transition-colors ${
+        className={`flex items-center justify-center p-[9px] rounded-full transition-colors group ${
           isDragging
-            ? 'bg-blue-50 text-blue-600'
-            : 'hover:bg-neutral-100 text-neutral-500'
+            ? 'bg-[#e8f0fe] text-[#1a73e8]'
+            : 'hover:bg-[#f8f9fa] text-[#4285f4]'
         }`}
         aria-label="Search by image"
         title="Search by image"
       >
-        <CameraIcon className="w-5 h-5" />
+        <CameraIcon className="w-6 h-6 group-hover:text-[#1a73e8]" />
       </button>
 
       {previewUrl && (
-        <div className="absolute top-full right-0 mt-2 bg-white rounded-lg shadow-google border border-neutral-border overflow-hidden">
+        <div className="absolute top-[calc(100%+12px)] right-0 bg-white rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.15)] border border-[#dadce0] overflow-hidden">
           <div className="relative">
             <img
               src={previewUrl}
@@ -104,14 +125,14 @@ const ImageSearch: React.FC<ImageSearchProps> = ({ onImageSelect, onError }) => 
             />
             <button
               onClick={clearPreview}
-              className="absolute top-2 right-2 p-1 bg-black/40 hover:bg-black/60 rounded-full text-white transition-colors"
+              className="absolute top-2 right-2 p-1.5 bg-[rgba(32,33,36,0.6)] hover:bg-[rgba(32,33,36,0.8)] rounded-full text-white transition-colors"
               aria-label="Remove image"
             >
               <XMarkIcon className="w-4 h-4" />
             </button>
           </div>
-          <div className="p-3 border-t border-neutral-border">
-            <p className="text-xs text-neutral-500">
+          <div className="px-4 py-3 border-t border-[#dadce0]">
+            <p className="text-[13px] leading-5 text-[#5f6368]">
               Search with this image
             </p>
           </div>

@@ -17,6 +17,8 @@ interface SearchContextType {
   clearResults: () => void;
   setCurrentPage: (page: number) => void;
   setQuery: (query: string) => void;
+  removeFromHistory: (timestamp: number) => void;
+  clearHistory: () => void;
 }
 
 const SearchContext = createContext<SearchContextType | undefined>(undefined);
@@ -95,6 +97,14 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
     setTotalPages(1);
   };
 
+  const removeFromHistory = (timestamp: number) => {
+    setSearchHistory(prev => prev.filter(item => item.timestamp !== timestamp));
+  };
+
+  const clearHistory = () => {
+    setSearchHistory([]);
+  };
+
   return (
     <SearchContext.Provider
       value={{
@@ -112,6 +122,8 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
         clearResults,
         setCurrentPage,
         setQuery,
+        removeFromHistory,
+        clearHistory,
       }}
     >
       {children}
