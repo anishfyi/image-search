@@ -13,7 +13,7 @@ interface TrendingSuggestionsProps {
 
 const TrendingSuggestions: React.FC<TrendingSuggestionsProps> = ({ suggestions, onSelect }) => {
   return (
-    <ul className="absolute w-full bg-white shadow-lg rounded-lg mt-1 border border-gray-200 z-10">
+    <ul className="w-full">
       {suggestions.map((suggestion) => (
         <li
           key={suggestion.id}
