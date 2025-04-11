@@ -3,11 +3,13 @@ import { MagnifyingGlassIcon, MicrophoneIcon, CameraIcon } from '../common/icons
 import SearchSuggestions from './SearchSuggestions';
 import VoiceSearch from './VoiceSearch';
 import SearchHistory from './SearchHistory';
+import TrendingSuggestions from './TrendingSuggestions';
 import { useSearch } from '../../context/SearchContext';
 import ImageSearch from './ImageSearch';
 import GoogleLens from './GoogleLens';
 import AudioListeningAnimation from '../common/AudioListeningAnimation';
 import { XMarkIcon } from '../common/icons';
+import { getTrendingSearches } from '../../services/trendingService';
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
@@ -26,7 +28,14 @@ const SearchBar: React.FC<SearchBarProps> = ({
 }) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showTrending, setShowTrending] = useState(true);
   const [suggestions, setSuggestions] = useState<Array<{ text: string; type: 'history' | 'suggestion' }>>([]);
+  const [trendingSuggestions, setTrendingSuggestions] = useState<Array<{
+    id: number;
+    text: string;
+    category: string;
+    trending: boolean;
+  }>>([]);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
   const [showLens, setShowLens] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -49,11 +58,23 @@ const SearchBar: React.FC<SearchBarProps> = ({
     { text: 'sunset images', type: 'suggestion' as const }
   ];
 
+  // Load trending suggestions
+  useEffect(() => {
+    const loadTrending = async () => {
+      const trending = await getTrendingSearches();
+      console.log('Loaded trending suggestions:', trending);
+      setTrendingSuggestions(trending);
+    };
+    loadTrending();
+  }, []);
+
+  // Handle click outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setShowSuggestions(false);
         setShowHistory(false);
+        setShowTrending(false);
         setSelectedSuggestionIndex(-1);
         setIsFocused(false);
       }
@@ -63,20 +84,23 @@ const SearchBar: React.FC<SearchBarProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Handle query changes
   useEffect(() => {
     if (query.trim()) {
       const filtered = mockSuggestions
         .filter(suggestion =>
           suggestion.text.toLowerCase().includes(query.toLowerCase())
         )
-        .slice(0, 10); // Limit to 10 suggestions
+        .slice(0, 10);
       setSuggestions(filtered);
       setShowSuggestions(true);
       setShowHistory(false);
+      setShowTrending(false);
     } else {
       setSuggestions([]);
       setShowSuggestions(false);
-      setShowHistory(true);
+      setShowHistory(false);
+      setShowTrending(true);
     }
     setSelectedSuggestionIndex(-1);
   }, [query]);
@@ -94,6 +118,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
       onSearch(query.trim());
       setShowSuggestions(false);
       setShowHistory(false);
+      setShowTrending(false);
       setSelectedSuggestionIndex(-1);
       inputRef.current?.blur();
     }
@@ -104,6 +129,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     onSearch(suggestion);
     setShowSuggestions(false);
     setShowHistory(false);
+    setShowTrending(false);
     setSelectedSuggestionIndex(-1);
     inputRef.current?.focus();
   };
@@ -115,6 +141,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
         onSearch(suggestions[selectedSuggestionIndex].text);
         setShowSuggestions(false);
         setShowHistory(false);
+        setShowTrending(false);
       } else if (query.trim()) {
         handleSubmit(e as any);
       }
@@ -148,12 +175,11 @@ const SearchBar: React.FC<SearchBarProps> = ({
   };
 
   const handleInputFocus = () => {
-    if (query.trim()) {
-      setShowSuggestions(true);
-      setShowHistory(false);
-    } else {
+    setIsFocused(true);
+    if (!query.trim()) {
       setShowSuggestions(false);
-      setShowHistory(true);
+      setShowHistory(false);
+      setShowTrending(true);
     }
   };
 
@@ -180,10 +206,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
-          onFocus={() => {
-            setIsFocused(true);
-            setShowHistory(true);
-          }}
+          onFocus={handleInputFocus}
           className="flex-1 h-[46px] bg-transparent text-[16px] leading-[22px] tracking-[0.1px] text-[#202124] outline-none placeholder-[#9aa0a6] px-0 border-none focus:ring-0 focus:outline-none appearance-none min-w-0"
           placeholder="Search images"
           autoComplete="off"
@@ -220,8 +243,14 @@ const SearchBar: React.FC<SearchBarProps> = ({
         </div>
       </form>
 
-      {(showSuggestions || showHistory) && (
-        <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-40 bg-white rounded-[24px] shadow-[0_2px_6px_rgba(32,33,36,0.28)] border border-[#dfe1e5] overflow-hidden transition-all duration-200 ease-in-out transform origin-top">
+      {(showSuggestions || showHistory || showTrending) && trendingSuggestions.length > 0 && (
+        <div className="absolute left-0 right-0 top-[100%] mt-1 bg-white rounded-2xl shadow-[0_4px_6px_-1px_rgba(0,0,0,0.1)] overflow-hidden">
+          {showTrending && (
+            <TrendingSuggestions
+              suggestions={trendingSuggestions}
+              onSelect={handleSuggestionSelect}
+            />
+          )}
           {showSuggestions && suggestions.length > 0 && (
             <SearchSuggestions
               suggestions={suggestions}
@@ -241,11 +270,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
       {showVoiceSearch && (
         <VoiceSearch
           onClose={() => setShowVoiceSearch(false)}
-          onResult={(text) => {
-            setQuery(text);
-            setShowVoiceSearch(false);
-            onSearch(text);
-          }}
+          onResult={handleVoiceResult}
         />
       )}
 

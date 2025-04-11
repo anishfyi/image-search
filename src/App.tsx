@@ -2,6 +2,8 @@ import React, { Suspense } from 'react';
 import { SearchProvider } from './context/SearchContext';
 import MainLayout from './components/layout/MainLayout';
 import LoadingSpinner from './components/common/LoadingSpinner';
+import { AuthProvider } from './context/AuthContext';
+import { BrowserRouter as Router } from 'react-router-dom';
 
 // Lazy load pages
 const SearchPage = React.lazy(() => import('./pages/SearchPage'));
@@ -16,14 +18,18 @@ const PageLoader: React.FC = () => (
 
 const App: React.FC = () => {
   return (
-    <SearchProvider>
-      <MainLayout>
-        <Suspense fallback={<PageLoader />}>
-          <SearchPage />
-          <ResultsPage />
-        </Suspense>
-      </MainLayout>
-    </SearchProvider>
+    <Router>
+      <AuthProvider>
+        <SearchProvider>
+          <MainLayout>
+            <Suspense fallback={<PageLoader />}>
+              <SearchPage />
+              <ResultsPage />
+            </Suspense>
+          </MainLayout>
+        </SearchProvider>
+      </AuthProvider>
+    </Router>
   );
 };
 

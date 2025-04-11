@@ -36,9 +36,12 @@ out
 .env.development.local
 .env.test.local
 .env.production.local
+.env*.local
 
 # Testing
 coverage
+/coverage
+.nyc_output
 
 # Markdown files (except README.md)
 *.md
@@ -48,3 +51,28 @@ coverage
 .cache
 .npm
 .eslintcache
+.next
+.vercel
+.turbo
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# PWA files
+**/public/sw.js
+**/public/workbox-*.js
+**/public/worker-*.js
+**/public/sw.js.map
+**/public/workbox-*.js.map
+**/public/worker-*.js.map
+
+# Debug
+debug.log
+debug/
+
+# Temporary files
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
