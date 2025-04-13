@@ -56,6 +56,7 @@ export const SearchProvider: React.FC<SearchProviderProps> = ({ children }) => {
       setTotalPages(Math.ceil(results.length / 12)); // Assuming 12 items per page
       setSearchHistory(prev => [...prev, { query, timestamp: Date.now() }].slice(0, 10));
     } catch (error) {
+      console.error('Search error:', error);
       setError(error instanceof Error ? error.message : 'An error occurred during search');
       setSearchResults([]);
     } finally {

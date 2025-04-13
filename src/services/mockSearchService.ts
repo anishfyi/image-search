@@ -5,10 +5,10 @@ import { ImageService } from './imageService';
 const sampleImages: ImageResult[] = [
   {
     id: '1',
-    title: 'Beautiful Mountain Landscape',
-    url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=200&fit=crop',
-    source: 'Unsplash',
+    title: 'H&M Floral Summer Dress',
+    url: 'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=300&h=200&fit=crop',
+    source: 'H&M',
     width: 800,
     height: 600,
     size: '1.2 MB',
@@ -16,10 +16,10 @@ const sampleImages: ImageResult[] = [
   },
   {
     id: '2',
-    title: 'Ocean Sunset',
-    url: 'https://images.unsplash.com/photo-1503803548695-c2a7b4a5b875',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1503803548695-c2a7b4a5b875?w=300&h=200&fit=crop',
-    source: 'Unsplash',
+    title: 'Zara Spring Collection 2024',
+    url: 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1539109136881-3be0616acf4b?w=300&h=200&fit=crop',
+    source: 'Zara',
     width: 800,
     height: 600,
     size: '1.5 MB',
@@ -27,10 +27,10 @@ const sampleImages: ImageResult[] = [
   },
   {
     id: '3',
-    title: 'City Skyline',
-    url: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=300&h=200&fit=crop',
-    source: 'Unsplash',
+    title: 'Uniqlo Basic T-Shirt Collection',
+    url: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=300&h=200&fit=crop',
+    source: 'Uniqlo',
     width: 800,
     height: 600,
     size: '1.8 MB',
@@ -38,10 +38,10 @@ const sampleImages: ImageResult[] = [
   },
   {
     id: '4',
-    title: 'Forest Path',
-    url: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=300&h=200&fit=crop',
-    source: 'Unsplash',
+    title: 'Nike Air Max 2024',
+    url: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=300&h=200&fit=crop',
+    source: 'Nike',
     width: 800,
     height: 600,
     size: '1.3 MB',
@@ -49,10 +49,10 @@ const sampleImages: ImageResult[] = [
   },
   {
     id: '5',
-    title: 'Desert Dunes',
-    url: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=300&h=200&fit=crop',
-    source: 'Unsplash',
+    title: 'Adidas Training Collection',
+    url: 'https://images.unsplash.com/photo-1556906781-9a412961c28c',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1556906781-9a412961c28c?w=300&h=200&fit=crop',
+    source: 'Adidas',
     width: 800,
     height: 600,
     size: '1.4 MB',
@@ -60,10 +60,10 @@ const sampleImages: ImageResult[] = [
   },
   {
     id: '6',
-    title: 'Beach Waves',
-    url: 'https://images.unsplash.com/photo-1495954484750-af469f2f9be5',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1495954484750-af469f2f9be5?w=300&h=200&fit=crop',
-    source: 'Unsplash',
+    title: 'Mango Summer Essentials',
+    url: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=300&h=200&fit=crop',
+    source: 'Mango',
     width: 800,
     height: 600,
     size: '1.6 MB',
@@ -71,10 +71,10 @@ const sampleImages: ImageResult[] = [
   },
   {
     id: '7',
-    title: 'Mountain Lake',
-    url: 'https://images.unsplash.com/photo-1439066615861-d1af74d74000',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1439066615861-d1af74d74000?w=300&h=200&fit=crop',
-    source: 'Unsplash',
+    title: 'ASOS Trending Styles',
+    url: 'https://images.unsplash.com/photo-1525507119028-ed4c629a60a3',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1525507119028-ed4c629a60a3?w=300&h=200&fit=crop',
+    source: 'ASOS',
     width: 800,
     height: 600,
     size: '1.7 MB',
@@ -82,10 +82,10 @@ const sampleImages: ImageResult[] = [
   },
   {
     id: '8',
-    title: 'Urban Street',
-    url: 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b',
-    thumbnailUrl: 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=300&h=200&fit=crop',
-    source: 'Unsplash',
+    title: 'H&M Sustainable Collection',
+    url: 'https://images.unsplash.com/photo-1544441893-675973e31985',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1544441893-675973e31985?w=300&h=200&fit=crop',
+    source: 'H&M',
     width: 800,
     height: 600,
     size: '1.9 MB',
@@ -128,17 +128,28 @@ export class MockSearchService {
   }
 
   async searchByText(query: string): Promise<ImageResult[]> {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+      // Reduce delay for testing
+      await new Promise(resolve => setTimeout(resolve, 300));
 
-    // Filter images based on query
-    const filteredImages = sampleImages.filter(image => 
-      image.title.toLowerCase().includes(query.toLowerCase()) ||
-      image.source.toLowerCase().includes(query.toLowerCase())
-    );
+      // Filter images based on query
+      const filteredImages = sampleImages.filter(image => 
+        image.title.toLowerCase().includes(query.toLowerCase()) ||
+        image.source.toLowerCase().includes(query.toLowerCase())
+      );
 
-    // If no matches found, return all images (like Google does)
-    return filteredImages.length > 0 ? filteredImages : sampleImages;
+      // If no matches found, return all images (like Google does)
+      const results = filteredImages.length > 0 ? filteredImages : sampleImages;
+      
+      if (!results) {
+        throw new Error('No results found');
+      }
+
+      return results;
+    } catch (error) {
+      console.error('Search error:', error);
+      throw error;
+    }
   }
 
   async searchByImage(file: File): Promise<ImageResult> {

@@ -1,13 +1,14 @@
 import React, { Suspense } from 'react';
 import { SearchProvider } from './context/SearchContext';
+import { ThemeProvider } from './context/ThemeContext';
 import MainLayout from './components/layout/MainLayout';
 import LoadingSpinner from './components/common/LoadingSpinner';
 import { AuthProvider } from './context/AuthContext';
-import { BrowserRouter as Router } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 // Lazy load pages
 const SearchPage = React.lazy(() => import('./pages/SearchPage'));
-const ResultsPage = React.lazy(() => import('./pages/ResultsPage'));
+const ResultImagesPage = React.lazy(() => import('./pages/ResultImagesPage'));
 
 // Loading fallback component
 const PageLoader: React.FC = () => (
@@ -19,16 +20,20 @@ const PageLoader: React.FC = () => (
 const App: React.FC = () => {
   return (
     <Router>
-      <AuthProvider>
-        <SearchProvider>
-          <MainLayout>
-            <Suspense fallback={<PageLoader />}>
-              <SearchPage />
-              <ResultsPage />
-            </Suspense>
-          </MainLayout>
-        </SearchProvider>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <SearchProvider>
+            <MainLayout>
+              <Suspense fallback={<PageLoader />}>
+                <Routes>
+                  <Route path="/" element={<SearchPage />} />
+                  <Route path="/images" element={<ResultImagesPage />} />
+                </Routes>
+              </Suspense>
+            </MainLayout>
+          </SearchProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </Router>
   );
 };

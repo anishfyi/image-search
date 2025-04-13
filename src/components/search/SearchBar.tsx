@@ -10,6 +10,7 @@ import GoogleLens from './GoogleLens';
 import AudioListeningAnimation from '../common/AudioListeningAnimation';
 import { XMarkIcon } from '../common/icons';
 import { getTrendingSearches } from '../../services/trendingService';
+import { useNavigate } from 'react-router-dom';
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
@@ -17,6 +18,8 @@ interface SearchBarProps {
   initialQuery?: string;
   isLoading?: boolean;
   error?: string | null;
+  className?: string;
+  theme?: 'dark' | 'light';
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({ 
@@ -24,11 +27,13 @@ const SearchBar: React.FC<SearchBarProps> = ({
   onImageSearch,
   initialQuery = '',
   isLoading = false,
-  error = null
+  error = null,
+  className = '',
+  theme = 'light'
 }) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
-  const [showTrending, setShowTrending] = useState(true);
+  const [showTrending, setShowTrending] = useState(false);
   const [suggestions, setSuggestions] = useState<Array<{ text: string; type: 'history' | 'suggestion' }>>([]);
   const [trendingSuggestions, setTrendingSuggestions] = useState<Array<{
     id: number;
@@ -43,19 +48,20 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const { query = '', setQuery, searchHistory, clearHistory } = useSearch();
   const [showVoiceSearch, setShowVoiceSearch] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const navigate = useNavigate();
 
   // Mock suggestions - in a real app, these would come from an API
   const mockSuggestions = [
-    { text: 'nature photography', type: 'suggestion' as const },
-    { text: 'nature wallpaper hd', type: 'suggestion' as const },
-    { text: 'natural scenery', type: 'suggestion' as const },
-    { text: 'nature background', type: 'suggestion' as const },
-    { text: 'nature images free download', type: 'suggestion' as const },
-    { text: 'beautiful nature', type: 'suggestion' as const },
-    { text: 'landscape photography', type: 'suggestion' as const },
-    { text: 'landscape wallpaper', type: 'suggestion' as const },
-    { text: 'mountain scenery', type: 'suggestion' as const },
-    { text: 'sunset images', type: 'suggestion' as const }
+    { text: 'summer dresses', type: 'suggestion' as const },
+    { text: 'evening gowns', type: 'suggestion' as const },
+    { text: 'wedding dresses', type: 'suggestion' as const },
+    { text: 'casual dresses', type: 'suggestion' as const },
+    { text: 'formal dresses', type: 'suggestion' as const },
+    { text: 'party dresses', type: 'suggestion' as const },
+    { text: 'maxi dresses', type: 'suggestion' as const },
+    { text: 'cocktail dresses', type: 'suggestion' as const },
+    { text: 'prom dresses', type: 'suggestion' as const },
+    { text: 'designer dresses', type: 'suggestion' as const }
   ];
 
   // Load trending suggestions
@@ -116,6 +122,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     e.stopPropagation();
     if (query.trim()) {
       onSearch(query.trim());
+      navigate('/images');
       setShowSuggestions(false);
       setShowHistory(false);
       setShowTrending(false);
@@ -127,6 +134,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const handleSuggestionSelect = (suggestion: string) => {
     setQuery(suggestion);
     onSearch(suggestion);
+    navigate('/images');
     setShowSuggestions(false);
     setShowHistory(false);
     setShowTrending(false);
@@ -180,13 +188,16 @@ const SearchBar: React.FC<SearchBarProps> = ({
       setShowSuggestions(false);
       setShowHistory(false);
       setShowTrending(true);
+    } else {
+      setShowTrending(false);
+      setShowSuggestions(true);
     }
   };
 
   return (
     <div 
       ref={containerRef}
-      className="relative w-full max-w-[584px] mx-auto"
+      className={`relative w-full max-w-[584px] mx-auto ${className}`}
     >
       <form 
         onSubmit={handleSubmit}
@@ -244,19 +255,47 @@ const SearchBar: React.FC<SearchBarProps> = ({
       </form>
 
       {(showSuggestions || showHistory || showTrending) && trendingSuggestions.length > 0 && (
-        <div className="absolute left-0 right-0 top-[100%] z-50 mt-1 bg-white rounded-2xl shadow-md border border-gray-200">
+        <div className={`absolute left-0 right-0 top-[100%] z-50 mt-1 rounded-2xl shadow-md ${
+          theme === 'dark'
+            ? 'bg-[#202124] border border-[#3c4043]'
+            : 'bg-white border border-gray-200'
+        }`}>
           {showTrending && (
             <TrendingSuggestions
               suggestions={trendingSuggestions}
               onSelect={handleSuggestionSelect}
+              theme={theme}
             />
           )}
           {showSuggestions && suggestions.length > 0 && (
-            <SearchSuggestions
-              suggestions={suggestions}
-              onSelect={handleSuggestionSelect}
-              selectedIndex={selectedSuggestionIndex}
-            />
+            <div
+              className={`absolute top-full left-0 right-0 mt-1 rounded-lg shadow-lg overflow-hidden ${
+                theme === 'dark' 
+                  ? 'bg-[#202124] border border-[#3c4043]' 
+                  : 'bg-white border border-gray-200'
+              }`}
+            >
+              <div className="py-2">
+                {suggestions.map((suggestion, index) => (
+                  <button
+                    key={suggestion.text}
+                    className={`w-full px-4 py-2 text-left ${
+                      index === selectedSuggestionIndex 
+                        ? theme === 'dark'
+                          ? 'bg-[#3c4043] text-[#e8eaed]'
+                          : 'bg-gray-100 text-gray-900'
+                        : theme === 'dark'
+                          ? 'text-[#e8eaed] hover:bg-[#3c4043]'
+                          : 'text-gray-900 hover:bg-gray-100'
+                    }`}
+                    onClick={() => handleSuggestionSelect(suggestion.text)}
+                    onMouseEnter={() => setSelectedSuggestionIndex(index)}
+                  >
+                    {suggestion.text}
+                  </button>
+                ))}
+              </div>
+            </div>
           )}
           {showHistory && searchHistory.length > 0 && (
             <SearchHistory

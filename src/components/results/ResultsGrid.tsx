@@ -1,7 +1,8 @@
 import React, { useCallback, useRef, useState, KeyboardEvent } from 'react';
 import { ImageResult } from '../../types/image';
+import { useTheme } from '../../context/ThemeContext';
 import LazyImageViewer from './LazyImageViewer';
-import ShareButton from './ShareButton';
+import GoogleImageCard from './GoogleImageCard';
 
 interface ResultsGridProps {
   results: ImageResult[];
@@ -10,6 +11,7 @@ interface ResultsGridProps {
 }
 
 const ResultsGrid: React.FC<ResultsGridProps> = ({ results, loading, error }) => {
+  const { theme } = useTheme();
   const [focusedIndex, setFocusedIndex] = useState<number>(-1);
   const [selectedImage, setSelectedImage] = useState<ImageResult | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
@@ -19,15 +21,20 @@ const ResultsGrid: React.FC<ResultsGridProps> = ({ results, loading, error }) =>
     const gridCols = {
       sm: 2,
       md: 3,
-      lg: 4
+      lg: 4,
+      xl: 6
     };
 
     // Determine current grid columns based on viewport width
     let currentCols = gridCols.lg;
-    if (window.innerWidth < 768) {
+    if (window.innerWidth < 640) {
       currentCols = gridCols.sm;
-    } else if (window.innerWidth < 1024) {
+    } else if (window.innerWidth < 768) {
       currentCols = gridCols.md;
+    } else if (window.innerWidth < 1280) {
+      currentCols = gridCols.lg;
+    } else {
+      currentCols = gridCols.xl;
     }
 
     let newIndex = focusedIndex;
@@ -72,40 +79,66 @@ const ResultsGrid: React.FC<ResultsGridProps> = ({ results, loading, error }) =>
 
   if (loading) {
     return (
-      <div 
-        className="flex justify-center items-center min-h-[400px]"
-        role="status"
-        aria-label="Loading search results"
-      >
-        <div 
-          className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"
-          aria-hidden="true"
-        />
-        <span className="sr-only">Loading...</span>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+        {[...Array(12)].map((_, index) => (
+          <div key={index} className="animate-pulse">
+            <div className={`aspect-[4/3] rounded-lg ${
+              theme === 'dark' ? 'bg-[#303134]' : 'bg-gray-200'
+            }`} />
+            <div className="mt-2 space-y-2">
+              <div className={`h-4 rounded ${
+                theme === 'dark' ? 'bg-[#303134]' : 'bg-gray-200'
+              }`} />
+              <div className={`h-3 rounded w-2/3 ${
+                theme === 'dark' ? 'bg-[#303134]' : 'bg-gray-200'
+              }`} />
+            </div>
+          </div>
+        ))}
       </div>
     );
   }
 
   if (error) {
     return (
-      <div 
-        className="text-center text-red-500 py-8"
-        role="alert"
-        aria-live="polite"
-      >
-        <p>{error}</p>
+      <div className="flex flex-col items-center justify-center h-64 px-4">
+        <div className={`text-4xl mb-4 ${
+          theme === 'dark' ? 'text-[#969ba1]' : 'text-gray-400'
+        }`}>
+          ⚠️
+        </div>
+        <div className={`text-lg font-medium mb-2 ${
+          theme === 'dark' ? 'text-[#e8eaed]' : 'text-gray-800'
+        }`}>
+          Something went wrong
+        </div>
+        <div className={`text-center ${
+          theme === 'dark' ? 'text-[#969ba1]' : 'text-gray-600'
+        }`}>
+          {error}
+        </div>
       </div>
     );
   }
 
   if (results.length === 0) {
     return (
-      <div 
-        className="text-center text-gray-500 py-8"
-        role="status"
-        aria-live="polite"
-      >
-        <p>No results found</p>
+      <div className="flex flex-col items-center justify-center h-64 px-4">
+        <div className={`text-4xl mb-4 ${
+          theme === 'dark' ? 'text-[#969ba1]' : 'text-gray-400'
+        }`}>
+          🔍
+        </div>
+        <div className={`text-lg font-medium mb-2 ${
+          theme === 'dark' ? 'text-[#e8eaed]' : 'text-gray-800'
+        }`}>
+          No results found
+        </div>
+        <div className={`text-center ${
+          theme === 'dark' ? 'text-[#969ba1]' : 'text-gray-600'
+        }`}>
+          Try different keywords or check your spelling
+        </div>
       </div>
     );
   }
@@ -114,11 +147,9 @@ const ResultsGrid: React.FC<ResultsGridProps> = ({ results, loading, error }) =>
     <>
       <div
         ref={gridRef}
-        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 px-4 sm:px-6 lg:px-8"
+        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4"
         role="grid"
         aria-label="Search results grid"
-        aria-rowcount={Math.ceil(results.length / 4)}
-        aria-colcount={4}
       >
         {results.map((result, index) => (
           <div
@@ -126,64 +157,42 @@ const ResultsGrid: React.FC<ResultsGridProps> = ({ results, loading, error }) =>
               itemRefs.current[index] = el;
             }}
             key={result.id}
-            className={`bg-white rounded-lg overflow-hidden hover:shadow-lg transition-shadow ${
-              focusedIndex === index ? 'ring-2 ring-[#1a73e8]' : ''
+            className={`relative group ${
+              focusedIndex === index 
+                ? theme === 'dark'
+                  ? 'ring-2 ring-[#8ab4f8]'
+                  : 'ring-2 ring-[#1a73e8]'
+                : ''
             }`}
             role="gridcell"
-            aria-rowindex={Math.floor(index / 4) + 1}
-            aria-colindex={(index % 4) + 1}
             tabIndex={focusedIndex === index ? 0 : -1}
             onKeyDown={(e) => handleKeyDown(e, index)}
-            onClick={() => setSelectedImage(result)}
             onFocus={() => setFocusedIndex(index)}
           >
-            <div 
-              className="relative aspect-video group"
-              role="img"
-              aria-label={result.title}
-            >
+            <div className={`aspect-[4/3] ${
+              theme === 'dark' ? 'bg-[#303134]' : 'bg-gray-100'
+            } rounded-lg overflow-hidden`}>
               <img
                 src={result.thumbnailUrl}
                 alt={result.title}
-                className="w-full h-full object-cover group-hover:opacity-90 transition-opacity"
+                className="w-full h-full object-cover group-hover:opacity-95 transition-opacity"
                 loading="lazy"
               />
-              {result.metadata?.similarity && (
-                <div 
-                  className="absolute top-2 right-2 bg-black bg-opacity-70 text-white text-xs px-2 py-1 rounded-full"
-                  aria-label={`${Math.round(result.metadata.similarity * 100)}% similar`}
-                >
-                  {Math.round(result.metadata.similarity * 100)}% similar
-                </div>
-              )}
-              <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-200" />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
             </div>
-            <div className="p-3">
-              <h3 
-                className="text-sm font-normal text-[#202124] mb-1 line-clamp-2"
-                id={`image-title-${result.id}`}
-              >
+            <div className="mt-2 text-sm">
+              <div className={`line-clamp-2 ${
+                theme === 'dark'
+                  ? 'text-[#bdc1c6] group-hover:text-[#8ab4f8]'
+                  : 'text-gray-900 group-hover:text-[#1a73e8]'
+              }`}>
                 {result.title}
-              </h3>
-              <div 
-                className="flex items-center justify-between text-xs text-[#70757a]"
-                aria-label={`Image details: from ${result.source}, size ${result.size}`}
-              >
-                <span className="truncate">{result.source}</span>
-                <span className="ml-2 whitespace-nowrap">{result.size}</span>
               </div>
-              <div className="mt-2 flex justify-end">
-                <ShareButton image={result} />
+              <div className={`mt-1 text-xs ${
+                theme === 'dark' ? 'text-[#969ba1]' : 'text-gray-600'
+              }`}>
+                {result.source}
               </div>
-              {result.metadata?.uploadedImage && (
-                <div 
-                  className="mt-2 text-xs text-[#70757a]"
-                  aria-label={`Original image: ${result.metadata.uploadedImage.width}x${result.metadata.uploadedImage.height} pixels, size ${result.metadata.uploadedImage.size}`}
-                >
-                  <p>Uploaded image: {result.metadata.uploadedImage.width}x{result.metadata.uploadedImage.height}</p>
-                  <p>Size: {result.metadata.uploadedImage.size}</p>
-                </div>
-              )}
             </div>
           </div>
         ))}
