@@ -1,12 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext';
 import { useSearch } from '../context/SearchContext';
 import SearchBar from '../components/search/SearchBar';
 import Navbar from '../components/navigation/Navbar';
 import { useNavigate } from 'react-router-dom';
 
-const GoogleLogo = ({ theme }: { theme: 'light' | 'dark' }) => (
-  <svg viewBox="0 0 272 92" width="272" height="92">
+const GoogleLogo = ({ theme, isMobile }: { theme: 'light' | 'dark', isMobile: boolean }) => (
+  <svg viewBox="0 0 272 92" width={isMobile ? "160" : "272"} height={isMobile ? "53" : "92"}>
     <path
       fill={theme === 'dark' ? '#ffffff' : '#4285F4'}
       d="M115.75 47.18c0 12.77-9.99 22.18-22.25 22.18s-22.25-9.41-22.25-22.18C71.25 34.32 81.24 25 93.5 25s22.25 9.32 22.25 22.18zm-9.74 0c0-7.98-5.79-13.44-12.51-13.44S80.99 39.2 80.99 47.18c0 7.9 5.79 13.44 12.51 13.44s12.51-5.55 12.51-13.44z"
@@ -38,6 +38,16 @@ const SearchPage: React.FC = () => {
   const { theme } = useTheme();
   const { searchByText, searchByImage } = useSearch();
   const navigate = useNavigate();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    handleResize(); // Initial check
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleSearch = async (query: string) => {
     await searchByText(query);
@@ -58,44 +68,54 @@ const SearchPage: React.FC = () => {
       <Navbar />
 
       {/* Main Content */}
-      <main className="flex flex-col items-center justify-center flex-1 px-4 mt-32">
-        <div className="mb-8">
-          <GoogleLogo theme={theme} />
+      <main className={`flex flex-col items-center justify-between ${isMobile ? 'min-h-[calc(100vh-56px)]' : ''} px-0`}>
+        {/* Top section with logo and search bar */}
+        <div className={`flex flex-col items-center w-full ${isMobile ? 'mt-6 mb-8' : 'mt-32'}`}>
+          <div className={`${isMobile ? 'mb-5' : 'mb-8'}`}>
+            <GoogleLogo theme={theme} isMobile={isMobile} />
+          </div>
+
+          <div className="w-full">
+            <SearchBar
+              onSearch={handleSearch}
+              onImageSearch={handleImageSearch}
+            />
+          </div>
+
+          <div className={`${isMobile ? 'mt-6 flex justify-center w-full space-x-2' : 'mt-8 flex flex-row space-x-4'}`}>
+            <button 
+              onClick={() => handleSearch('Google Search')}
+              className={`px-4 py-2 text-sm ${
+                isMobile ? 'text-xs px-3 py-[9px]' : ''
+              } ${
+                theme === 'dark' 
+                  ? 'bg-[#303134] hover:bg-[#3c4043] text-white'
+                  : 'bg-[#f8f9fa] hover:bg-gray-200 text-gray-800 border border-[#f8f9fa] hover:border-gray-200'
+              } rounded`}>
+              Google Search
+            </button>
+            <button 
+              onClick={() => handleSearch("I'm Feeling Lucky")}
+              className={`px-4 py-2 text-sm ${
+                isMobile ? 'text-xs px-3 py-[9px]' : ''
+              } ${
+                theme === 'dark' 
+                  ? 'bg-[#303134] hover:bg-[#3c4043] text-white'
+                  : 'bg-[#f8f9fa] hover:bg-gray-200 text-gray-800 border border-[#f8f9fa] hover:border-gray-200'
+              } rounded`}>
+              I'm Feeling Lucky
+            </button>
+          </div>
         </div>
 
-        <div className="w-full max-w-[584px]">
-          <SearchBar
-            onSearch={handleSearch}
-            onImageSearch={handleImageSearch}
-          />
-        </div>
-
-        <div className="mt-8 flex space-x-4">
-          <button 
-            onClick={() => handleSearch('Google Search')}
-            className={`px-4 py-2 text-sm ${
-              theme === 'dark' 
-                ? 'bg-[#303134] hover:bg-[#3c4043] text-white'
-                : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
-            } rounded`}>
-            Google Search
-          </button>
-          <button 
-            onClick={() => handleSearch("I'm Feeling Lucky")}
-            className={`px-4 py-2 text-sm ${
-              theme === 'dark' 
-                ? 'bg-[#303134] hover:bg-[#3c4043] text-white'
-                : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
-            } rounded`}>
-            I'm Feeling Lucky
-          </button>
-        </div>
-
-        <div className="mt-8 text-sm">
+        {/* Bottom section with language options */}
+        {isMobile && <div className="flex-grow" />}
+        
+        <div className={`${isMobile ? 'w-full py-4 border-t border-gray-200 dark:border-[#3c4043]' : 'mt-8'} text-sm text-center`}>
           <span className={theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}>
             Google offered in: 
           </span>
-          <div className="inline-flex space-x-2 ml-2">
+          <div className={`${isMobile ? 'flex flex-wrap justify-center gap-2 mt-2' : 'inline-flex space-x-2 ml-2'}`}>
             <a href="#" className="text-[#8ab4f8] hover:underline">हिन्दी</a>
             <a href="#" className="text-[#8ab4f8] hover:underline">বাংলা</a>
             <a href="#" className="text-[#8ab4f8] hover:underline">తెలుగు</a>

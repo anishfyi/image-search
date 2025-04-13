@@ -1,16 +1,14 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSearch } from '../context/SearchContext';
 import { useTheme } from '../context/ThemeContext';
 import ResultsGrid from '../components/results/ResultsGrid';
 import SearchBar from '../components/search/SearchBar';
 import { Link } from 'react-router-dom';
-import { BeakerIcon, Squares2X2Icon } from '@heroicons/react/24/outline';
 import { BookmarkIcon } from '@heroicons/react/24/solid';
-import { SunIcon, MoonIcon } from '@heroicons/react/24/outline';
 import Navbar from '../components/navigation/Navbar';
 
-const GoogleLogo = ({ theme }: { theme: 'light' | 'dark' }) => (
-  <svg viewBox="0 0 272 92" width="92" height="30">
+const GoogleLogo = ({ theme, isMobile }: { theme: 'light' | 'dark', isMobile: boolean }) => (
+  <svg viewBox="0 0 272 92" width={isMobile ? "80" : "92"} height={isMobile ? "27" : "30"}>
     <path
       fill={theme === 'dark' ? '#ffffff' : '#4285F4'}
       d="M115.75 47.18c0 12.77-9.99 22.18-22.25 22.18s-22.25-9.41-22.25-22.18C71.25 34.32 81.24 25 93.5 25s22.25 9.32 22.25 22.18zm-9.74 0c0-7.98-5.79-13.44-12.51-13.44S80.99 39.2 80.99 47.18c0 7.9 5.79 13.44 12.51 13.44s12.51-5.55 12.51-13.44z"
@@ -41,6 +39,16 @@ const GoogleLogo = ({ theme }: { theme: 'light' | 'dark' }) => (
 const ResultImagesPage: React.FC = () => {
   const { searchResults: results, isLoading, error, query, searchByText, searchByImage } = useSearch();
   const { theme } = useTheme();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    handleResize(); // Initial check
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     // Initial search when component mounts if there's a query
@@ -98,75 +106,105 @@ const ResultImagesPage: React.FC = () => {
       <Navbar />
 
       {/* Search Section */}
-      <div className="flex items-center px-[156px] py-4">
-        <Link to="/" className="mr-8">
-          <GoogleLogo theme={theme} />
-        </Link>
-        <SearchBar
-          onSearch={handleSearch}
-          onImageSearch={handleImageSearch}
-          initialQuery={query}
-          className="!max-w-[692px] !mx-0"
-        />
+      <div className={`${isMobile ? 'px-0 pt-3 pb-0 flex-col' : 'px-[156px] py-4 flex'} flex items-center`}>
+        {isMobile ? (
+          <div className="w-full px-3 mb-0">
+            <div className="flex items-center mb-4 ml-2">
+              <Link to="/">
+                <GoogleLogo theme={theme} isMobile={true} />
+              </Link>
+            </div>
+            <SearchBar
+              onSearch={handleSearch}
+              onImageSearch={handleImageSearch}
+              initialQuery={query}
+              className="w-full"
+              theme={theme}
+              showWavyUnderline={true}
+            />
+            
+            {/* Border line */}
+            <div className="w-full h-px bg-gray-300 dark:bg-gray-700 mt-1"></div>
+          </div>
+        ) : (
+          <>
+            <Link to="/" className="mr-8">
+              <GoogleLogo theme={theme} isMobile={isMobile} />
+            </Link>
+            <SearchBar
+              onSearch={handleSearch}
+              onImageSearch={handleImageSearch}
+              initialQuery={query}
+              className="!max-w-[692px] !mx-0"
+              theme={theme}
+            />
+          </>
+        )}
       </div>
 
       {/* Navigation and Tools */}
-      <div className="flex items-center justify-between px-[156px] py-1 border-b border-gray-200 dark:border-[#3c4043]">
-        <div className="flex items-center space-x-6">
+      <div className={`${
+        isMobile 
+          ? 'px-0 py-0 overflow-x-auto no-scrollbar flex-nowrap whitespace-nowrap' 
+          : 'px-[156px] py-1 justify-between border-b border-gray-200 dark:border-[#3c4043]'
+      } flex items-center border-b border-gray-200 dark:border-gray-700`}>
+        <div className={`flex items-center ${isMobile ? 'space-x-8 px-4 py-2' : 'space-x-6'} overflow-x-auto no-scrollbar`}>
           {navigationItems.map((item) => (
             <a
               key={item.name}
               href={item.href}
-              className={`text-sm py-2 ${
+              className={`${isMobile ? 'text-[13px]' : 'text-sm'} flex-shrink-0 ${
                 item.current
                   ? theme === 'dark'
-                    ? 'text-[#8ab4f8] border-b-2 border-[#8ab4f8]'
-                    : 'text-[#1a73e8] border-b-2 border-[#1a73e8]'
+                    ? 'text-[#8ab4f8] border-b-[3px] border-[#8ab4f8] font-medium pb-[5px] -mb-[3px]'
+                    : 'text-[#1a73e8] border-b-[3px] border-[#1a73e8] font-medium pb-[5px] -mb-[3px]'
                   : theme === 'dark'
-                    ? 'text-[#969ba1] hover:text-white'
-                    : 'text-gray-600 hover:text-gray-900'
+                    ? 'text-[#969ba1] hover:text-white pb-[8px]'
+                    : 'text-gray-600 hover:text-gray-900 pb-[8px]'
               }`}
             >
               {item.name}
             </a>
           ))}
-          <button className={`text-sm ${
+          <button className={`${isMobile ? 'text-[13px]' : 'text-sm'} flex-shrink-0 ${
             theme === 'dark'
-              ? 'text-[#969ba1] hover:text-white'
-              : 'text-gray-600 hover:text-gray-900'
+              ? 'text-[#969ba1] hover:text-white pb-[8px]'
+              : 'text-gray-600 hover:text-gray-900 pb-[8px]'
           }`}>
             More
           </button>
         </div>
-        <div className="flex items-center gap-4">
-          <button className={`text-sm ${
-            theme === 'dark'
-              ? 'text-[#969ba1] hover:text-white'
-              : 'text-gray-600 hover:text-gray-900'
-          }`}>
-            Tools
-          </button>
-          <button className={`flex items-center gap-1 text-sm ${
-            theme === 'dark'
-              ? 'text-[#969ba1] hover:text-white'
-              : 'text-gray-600 hover:text-gray-900'
-          }`}>
-            <BookmarkIcon className="w-4 h-4" />
-            Saved
-          </button>
-        </div>
+        {!isMobile && (
+          <div className="flex items-center gap-4">
+            <button className={`text-sm ${
+              theme === 'dark'
+                ? 'text-[#969ba1] hover:text-white'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}>
+              Tools
+            </button>
+            <button className={`flex items-center gap-1 text-sm ${
+              theme === 'dark'
+                ? 'text-[#969ba1] hover:text-white'
+                : 'text-gray-600 hover:text-gray-900'
+            }`}>
+              <BookmarkIcon className="w-4 h-4" />
+              Saved
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Suggestion Chips */}
-      <div className="flex items-center gap-2 px-[156px] py-3 overflow-x-auto scrollbar-hide">
+      <div className={`flex items-center gap-2 ${isMobile ? 'px-3 py-2.5 pb-3 mt-2' : 'px-[156px] py-3'} overflow-x-auto no-scrollbar bg-transparent`}>
         {suggestionChips.map((chip) => (
           <button
             key={chip}
             onClick={() => handleSearch(chip)}
-            className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm transition-colors ${
+            className={`flex-shrink-0 ${isMobile ? 'text-xs px-3 py-1.5 h-8' : 'text-sm px-4 py-1.5'} rounded-full transition-colors ${
               theme === 'dark'
-                ? 'bg-black text-[#e8eaed] hover:bg-[#3c4043] border border-[#5f6368]'
-                : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                ? 'bg-[#303134] text-[#e8eaed] border border-[#3c4043]'
+                : 'bg-[#f1f3f4] text-gray-800 border-0'
             }`}
           >
             {chip}
@@ -175,9 +213,9 @@ const ResultImagesPage: React.FC = () => {
       </div>
 
       {/* Main Content */}
-      <main className="px-[156px] py-4">
+      <main className={`${isMobile ? 'px-2' : 'px-[156px]'} py-4`}>
         {/* Results Count */}
-        <div className={`text-sm ${
+        <div className={`${isMobile ? 'text-xs px-1' : 'text-sm'} ${
           theme === 'dark' ? 'text-[#969ba1]' : 'text-gray-600'
         } mb-4`}>
           About {results?.length || 0} results

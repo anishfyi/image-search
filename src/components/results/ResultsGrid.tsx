@@ -1,8 +1,7 @@
-import React, { useCallback, useRef, useState, KeyboardEvent } from 'react';
+import React, { useCallback, useRef, useState, KeyboardEvent, useEffect } from 'react';
 import { ImageResult } from '../../types/image';
 import { useTheme } from '../../context/ThemeContext';
 import LazyImageViewer from './LazyImageViewer';
-import GoogleImageCard from './GoogleImageCard';
 
 interface ResultsGridProps {
   results: ImageResult[];
@@ -14,11 +13,22 @@ const ResultsGrid: React.FC<ResultsGridProps> = ({ results, loading, error }) =>
   const { theme } = useTheme();
   const [focusedIndex, setFocusedIndex] = useState<number>(-1);
   const [selectedImage, setSelectedImage] = useState<ImageResult | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    handleResize(); // Initial check
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const handleKeyDown = useCallback((e: KeyboardEvent<HTMLDivElement>, index: number) => {
     const gridCols = {
+      xs: 2,  // Added extra small size for mobile phones
       sm: 2,
       md: 3,
       lg: 4,
@@ -27,7 +37,9 @@ const ResultsGrid: React.FC<ResultsGridProps> = ({ results, loading, error }) =>
 
     // Determine current grid columns based on viewport width
     let currentCols = gridCols.lg;
-    if (window.innerWidth < 640) {
+    if (window.innerWidth < 480) {
+      currentCols = gridCols.xs;
+    } else if (window.innerWidth < 640) {
       currentCols = gridCols.sm;
     } else if (window.innerWidth < 768) {
       currentCols = gridCols.md;
@@ -79,7 +91,7 @@ const ResultsGrid: React.FC<ResultsGridProps> = ({ results, loading, error }) =>
 
   if (loading) {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2 md:gap-4">
         {[...Array(12)].map((_, index) => (
           <div key={index} className="animate-pulse">
             <div className={`aspect-[4/3] rounded-lg ${
@@ -147,7 +159,7 @@ const ResultsGrid: React.FC<ResultsGridProps> = ({ results, loading, error }) =>
     <>
       <div
         ref={gridRef}
-        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4"
+        className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2 md:gap-4"
         role="grid"
         aria-label="Search results grid"
       >
@@ -168,10 +180,11 @@ const ResultsGrid: React.FC<ResultsGridProps> = ({ results, loading, error }) =>
             tabIndex={focusedIndex === index ? 0 : -1}
             onKeyDown={(e) => handleKeyDown(e, index)}
             onFocus={() => setFocusedIndex(index)}
+            onClick={() => setSelectedImage(result)}
           >
-            <div className={`aspect-[4/3] ${
+            <div className={`aspect-square rounded-md overflow-hidden ${
               theme === 'dark' ? 'bg-[#303134]' : 'bg-gray-100'
-            } rounded-lg overflow-hidden`}>
+            }`}>
               <img
                 src={result.thumbnailUrl}
                 alt={result.title}
@@ -180,15 +193,19 @@ const ResultsGrid: React.FC<ResultsGridProps> = ({ results, loading, error }) =>
               />
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
             </div>
-            <div className="mt-2 text-sm">
-              <div className={`line-clamp-2 ${
+            <div className={`mt-1 ${isMobile ? 'px-0.5' : 'mt-2'}`}>
+              <div className={`line-clamp-1 ${
+                isMobile ? 'text-xs' : 'text-sm'
+              } ${
                 theme === 'dark'
                   ? 'text-[#bdc1c6] group-hover:text-[#8ab4f8]'
                   : 'text-gray-900 group-hover:text-[#1a73e8]'
               }`}>
                 {result.title}
               </div>
-              <div className={`mt-1 text-xs ${
+              <div className={`${
+                isMobile ? 'text-[10px]' : 'text-xs'
+              } ${
                 theme === 'dark' ? 'text-[#969ba1]' : 'text-gray-600'
               }`}>
                 {result.source}

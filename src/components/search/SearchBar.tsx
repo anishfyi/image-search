@@ -6,8 +6,6 @@ import SearchHistory from './SearchHistory';
 import TrendingSuggestions from './TrendingSuggestions';
 import { useSearch } from '../../context/SearchContext';
 import ImageSearch from './ImageSearch';
-import GoogleLens from './GoogleLens';
-import AudioListeningAnimation from '../common/AudioListeningAnimation';
 import { XMarkIcon } from '../common/icons';
 import { getTrendingSearches } from '../../services/trendingService';
 import { useNavigate } from 'react-router-dom';
@@ -20,6 +18,7 @@ interface SearchBarProps {
   error?: string | null;
   className?: string;
   theme?: 'dark' | 'light';
+  showWavyUnderline?: boolean;
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({ 
@@ -29,7 +28,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
   isLoading = false,
   error = null,
   className = '',
-  theme = 'light'
+  theme = 'light',
+  showWavyUnderline = false
 }) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -49,6 +49,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const [showVoiceSearch, setShowVoiceSearch] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const navigate = useNavigate();
+  const [isMobile, setIsMobile] = useState(false);
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
 
   // Mock suggestions - in a real app, these would come from an API
   const mockSuggestions = [
@@ -196,21 +198,91 @@ const SearchBar: React.FC<SearchBarProps> = ({
     }
   };
 
+  const handleCameraClick = () => {
+    if (isMobile) {
+      // Open Google Lens or device camera
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        setIsCameraOpen(true);
+        navigator.mediaDevices.getUserMedia({ video: true })
+          .then(stream => {
+            // Handle camera stream
+            const video = document.createElement('video');
+            video.srcObject = stream;
+            video.onloadedmetadata = () => {
+              video.play();
+              // Here you can implement Google Lens-like functionality
+              // For now, we'll just take a photo
+              const canvas = document.createElement('canvas');
+              canvas.width = video.videoWidth;
+              canvas.height = video.videoHeight;
+              canvas.getContext('2d')?.drawImage(video, 0, 0);
+              const imageData = canvas.toDataURL('image/jpeg');
+              // Convert to File object
+              fetch(imageData)
+                .then(res => res.blob())
+                .then(blob => {
+                  const file = new File([blob], 'camera-photo.jpg', { type: 'image/jpeg' });
+                  onImageSearch(file);
+                  stream.getTracks().forEach(track => track.stop());
+                  setIsCameraOpen(false);
+                });
+            };
+          })
+          .catch(err => {
+            console.error('Camera error:', err);
+            setIsCameraOpen(false);
+          });
+      }
+    } else {
+      // Handle desktop image upload
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'image/*';
+      input.onchange = (e) => {
+        const file = (e.target as HTMLInputElement).files?.[0];
+        if (file) {
+          onImageSearch(file);
+        }
+      };
+      input.click();
+    }
+  };
+
+  // Add window resize listener
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    handleResize(); // Initial check
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <div 
       ref={containerRef}
-      className={`relative w-full max-w-[584px] mx-auto ${className}`}
+      className={`relative w-full mx-auto ${
+        isMobile ? 'max-w-full px-0' : 'max-w-[584px] px-4'
+      } ${className}`}
     >
       <form 
         onSubmit={handleSubmit}
-        className={`flex items-center w-full bg-white rounded-[24px] border ${
+        className={`flex items-center w-full ${
+          isMobile 
+            ? 'rounded-full h-12 mx-3 my-2 bg-[rgba(32,33,36,0.04)]' 
+            : 'rounded-[24px] h-[46px] bg-white'
+        } border ${
           isFocused 
-            ? 'border-transparent shadow-[0_1px_6px_rgba(32,33,36,0.28)] hover:shadow-[0_1px_6px_rgba(32,33,36,0.28)]' 
-            : 'border-[#dfe1e5] hover:shadow-[0_1px_6px_rgba(32,33,36,0.28)] hover:border-[#dfe1e5]'
-        } transition-all duration-200 focus-within:shadow-[0_1px_6px_rgba(32,33,36,0.28)]`}
+            ? theme === 'dark'
+              ? 'border-[#5f6368] shadow-none'
+              : 'border-transparent shadow-[0_1px_6px_rgba(32,33,36,0.28)]' 
+            : theme === 'dark'
+              ? 'border-[#5f6368] hover:shadow-none'
+              : 'border-[#dfe1e5] hover:shadow-[0_1px_6px_rgba(32,33,36,0.28)]'
+        } transition-all duration-200`}
       >
-        <div className="flex items-center pl-[14px] pr-[13px]">
-          <MagnifyingGlassIcon className="w-5 h-5 text-[#9aa0a6]" />
+        <div className={`flex items-center ${isMobile ? 'pl-4' : 'pl-[14px]'} pr-[13px]`}>
+          <MagnifyingGlassIcon className={`${isMobile ? 'w-5 h-5' : 'w-5 h-5'} ${theme === 'dark' ? 'text-[#9aa0a6]' : 'text-[#9aa0a6]'}`} />
         </div>
         
         <input
@@ -220,8 +292,14 @@ const SearchBar: React.FC<SearchBarProps> = ({
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
           onFocus={handleInputFocus}
-          className="flex-1 h-[46px] bg-transparent text-[16px] leading-[22px] tracking-[0.1px] text-[#202124] outline-none placeholder-[#9aa0a6] px-0 border-none focus:ring-0 focus:outline-none appearance-none min-w-0"
-          placeholder="Search images"
+          className={`flex-1 ${
+            isMobile 
+              ? 'text-[16px] h-10' 
+              : 'text-[16px] h-[46px]'
+          } leading-[22px] tracking-[0.1px] bg-transparent ${
+            theme === 'dark' ? 'text-[#e8eaed]' : 'text-[#202124]'
+          } outline-none placeholder-[#9aa0a6] px-0 border-none focus:ring-0 focus:outline-none appearance-none min-w-0`}
+          placeholder={isMobile ? "Search" : "Search images"}
           autoComplete="off"
           aria-label="Search images"
         />
@@ -230,34 +308,61 @@ const SearchBar: React.FC<SearchBarProps> = ({
           <button
             type="button"
             onClick={() => setQuery('')}
-            className="p-[6px] mx-[2px] hover:bg-[#f8f9fa] rounded-full transition-colors flex-shrink-0"
+            className={`${
+              isMobile ? 'p-2 mx-0' : 'p-[6px] mx-[2px]'
+            } hover:bg-[#f8f9fa] rounded-full transition-colors flex-shrink-0`}
             aria-label="Clear search input"
           >
-            <XMarkIcon className="w-[18px] h-[18px] text-[#70757a]" />
+            <XMarkIcon className={`${isMobile ? 'w-5 h-5' : 'w-[18px] h-[18px]'} text-[#70757a]`} />
           </button>
         )}
 
-        <div className="flex items-center gap-1 pr-[6px] pl-[4px] flex-shrink-0">
+        <div className={`flex items-center gap-1 ${isMobile ? 'pr-4' : 'pr-[6px]'} pl-[4px] flex-shrink-0`}>
           <button
             type="button"
             onClick={() => setShowVoiceSearch(true)}
-            className="p-[6px] hover:bg-[#f8f9fa] rounded-full transition-colors group flex-shrink-0"
+            className={`${
+              isMobile ? 'p-2' : 'p-[6px]'
+            } hover:bg-[#f8f9fa] rounded-full transition-colors group flex-shrink-0`}
             aria-label="Search by voice"
           >
-            <MicrophoneIcon className="w-5 h-5 text-[#4285f4] group-hover:text-[#1a73e8]" />
+            <MicrophoneIcon className={`${isMobile ? 'w-5 h-5' : 'w-5 h-5'} text-[#4285f4] group-hover:text-[#1a73e8]`} />
           </button>
 
-          <div className="h-[20px] mx-[2px] border-l border-[#dfe1e5]" />
+          <div className={`h-[20px] mx-[2px] border-l border-[#dfe1e5] ${isMobile ? 'hidden' : 'block'}`} />
 
-          <ImageSearch 
-            onImageSelect={onImageSearch} 
-            onError={(err) => error ? null : handleImageError(err)} 
-          />
+          <button
+            type="button"
+            onClick={handleCameraClick}
+            className={`${
+              isMobile ? 'p-2' : 'p-[6px]'
+            } hover:bg-[#f8f9fa] rounded-full transition-colors group flex-shrink-0`}
+            aria-label="Search by image"
+          >
+            <CameraIcon className={`${isMobile ? 'w-5 h-5' : 'w-5 h-5'} text-[#4285f4] group-hover:text-[#1a73e8]`} />
+          </button>
         </div>
       </form>
 
+      {showWavyUnderline && isMobile && theme === 'dark' && (
+        <div className="w-full px-16 -mt-1">
+          <svg className="w-full h-3" viewBox="0 0 100 4" preserveAspectRatio="none">
+            <path 
+              d="M0,3.5 C5,0.5 10,6.5 15,3.5 C20,0.5 25,6.5 30,3.5 C35,0.5 40,6.5 45,3.5 C50,0.5 55,6.5 60,3.5 C65,0.5 70,6.5 75,3.5 C80,0.5 85,6.5 90,3.5 C95,0.5 100,6.5 105,3.5" 
+              stroke="red" 
+              strokeWidth="1.5" 
+              fill="none"
+            />
+          </svg>
+        </div>
+      )}
+
       {(showSuggestions || showHistory || showTrending) && trendingSuggestions.length > 0 && (
-        <div className={`absolute left-0 right-0 top-[100%] z-50 mt-1 rounded-2xl shadow-md ${
+        <div className={`absolute left-0 right-0 top-[100%] z-50 mt-1 ${
+          isMobile 
+            ? 'mx-2 rounded-xl' 
+            : 'rounded-2xl'
+        } shadow-md ${
           theme === 'dark'
             ? 'bg-[#202124] border border-[#3c4043]'
             : 'bg-white border border-gray-200'
@@ -315,8 +420,39 @@ const SearchBar: React.FC<SearchBarProps> = ({
         />
       )}
 
+      {isCameraOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className={`bg-white rounded-lg ${
+            isMobile ? 'w-full h-full' : 'max-w-[90vw] max-h-[90vh] p-4'
+          }`}>
+            <div className={`flex items-center justify-between ${isMobile ? 'p-4' : ''}`}>
+              <h3 className="text-lg font-medium">Camera Access</h3>
+              <button
+                onClick={() => setIsCameraOpen(false)}
+                className="p-2 hover:bg-gray-100 rounded-full"
+              >
+                <XMarkIcon className="w-6 h-6" />
+              </button>
+            </div>
+            <div className={`${isMobile ? 'p-4' : ''}`}>
+              <p className="mb-4">Please allow camera access to use this feature.</p>
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setIsCameraOpen(false)}
+                  className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {error && (
-        <div className="absolute top-full left-0 right-0 mt-3 px-4 py-2 bg-[#fce8e6] text-[#d93025] rounded-lg text-[13px] leading-5">
+        <div className={`absolute top-full left-0 right-0 mt-3 ${
+          isMobile ? 'mx-4' : ''
+        } px-4 py-2 bg-[#fce8e6] text-[#d93025] rounded-lg text-[13px] leading-5`}>
           {error}
         </div>
       )}

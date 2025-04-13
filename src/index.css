@@ -41,6 +41,16 @@
   .animate-ripple {
     animation: ripple 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
   }
+
+  /* Hide scrollbar but maintain scrolling functionality */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
 }
 
 @keyframes ripple {
