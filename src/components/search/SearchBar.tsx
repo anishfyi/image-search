@@ -99,21 +99,23 @@ const SearchBar: React.FC<SearchBarProps> = ({
         )
         .slice(0, 10);
       setSuggestions(filtered);
-      setShowSuggestions(true);
+      setShowSuggestions(isFocused);
       setShowHistory(false);
       setShowTrending(false);
     } else {
       setSuggestions([]);
       setShowSuggestions(false);
       setShowHistory(false);
-      setShowTrending(true);
+      setShowTrending(isFocused);
     }
     setSelectedSuggestionIndex(-1);
-  }, [query]);
+  }, [query, isFocused]);
 
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus();
+      // Don't automatically show trending on initial focus
+      setIsFocused(false);
     }
   }, []);
 
