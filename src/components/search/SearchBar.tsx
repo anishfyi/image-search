@@ -9,6 +9,7 @@ import ImageSearch from './ImageSearch';
 import { XMarkIcon } from '../common/icons';
 import { getTrendingSearches } from '../../services/trendingService';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '../../context/ThemeContext';
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
@@ -65,6 +66,18 @@ const SearchBar: React.FC<SearchBarProps> = ({
     { text: 'prom dresses', type: 'suggestion' as const },
     { text: 'designer dresses', type: 'suggestion' as const }
   ];
+
+  // Update query from initialQuery only once on component mount or when initialQuery changes
+  const initialQueryRef = useRef(initialQuery);
+  
+  useEffect(() => {
+    if (initialQueryRef.current !== initialQuery) {
+      initialQueryRef.current = initialQuery;
+      if (initialQuery !== undefined) {
+        setQuery(initialQuery);
+      }
+    }
+  }, [initialQuery]);
 
   // Load trending suggestions
   useEffect(() => {
@@ -269,15 +282,17 @@ const SearchBar: React.FC<SearchBarProps> = ({
         onSubmit={handleSubmit}
         className={`flex items-center w-full ${
           isMobile 
-            ? 'rounded-full h-12 mx-3 my-2 bg-[rgba(32,33,36,0.04)]' 
-            : 'rounded-[24px] h-[46px] bg-white'
+            ? 'rounded-full h-12' 
+            : 'rounded-[24px] h-[46px]'
+        } ${
+          theme === 'dark' ? 'bg-[#303134]' : isMobile ? 'bg-[rgba(32,33,36,0.04)]' : 'bg-white'
         } border ${
           isFocused 
             ? theme === 'dark'
-              ? 'border-[#5f6368] shadow-none'
+              ? 'border-[#8ab4f8] shadow-none'
               : 'border-transparent shadow-[0_1px_6px_rgba(32,33,36,0.28)]' 
             : theme === 'dark'
-              ? 'border-[#5f6368] hover:shadow-none'
+              ? 'border-[#5f6368] hover:border-[#8ab4f8]'
               : 'border-[#dfe1e5] hover:shadow-[0_1px_6px_rgba(32,33,36,0.28)]'
         } transition-all duration-200`}
       >
@@ -297,8 +312,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
               ? 'text-[16px] h-10' 
               : 'text-[16px] h-[46px]'
           } leading-[22px] tracking-[0.1px] bg-transparent ${
-            theme === 'dark' ? 'text-[#e8eaed]' : 'text-[#202124]'
-          } outline-none placeholder-[#9aa0a6] px-0 border-none focus:ring-0 focus:outline-none appearance-none min-w-0`}
+            theme === 'dark' 
+              ? 'text-white placeholder-gray-400' 
+              : 'text-[#202124] placeholder-[#9aa0a6]'
+          } outline-none px-0 border-none focus:ring-0 focus:outline-none appearance-none min-w-0`}
           placeholder={isMobile ? "Search" : "Search images"}
           autoComplete="off"
           aria-label="Search images"
@@ -310,10 +327,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
             onClick={() => setQuery('')}
             className={`${
               isMobile ? 'p-2 mx-0' : 'p-[6px] mx-[2px]'
-            } hover:bg-[#f8f9fa] rounded-full transition-colors flex-shrink-0`}
+            } ${theme === 'dark' ? 'hover:bg-[#3c4043]' : 'hover:bg-[#f8f9fa]'} rounded-full transition-colors flex-shrink-0`}
             aria-label="Clear search input"
           >
-            <XMarkIcon className={`${isMobile ? 'w-5 h-5' : 'w-[18px] h-[18px]'} text-[#70757a]`} />
+            <XMarkIcon className={`${isMobile ? 'w-5 h-5' : 'w-[18px] h-[18px]'} ${theme === 'dark' ? 'text-[#9aa0a6]' : 'text-[#70757a]'}`} />
           </button>
         )}
 
@@ -323,20 +340,20 @@ const SearchBar: React.FC<SearchBarProps> = ({
             onClick={() => setShowVoiceSearch(true)}
             className={`${
               isMobile ? 'p-2' : 'p-[6px]'
-            } hover:bg-[#f8f9fa] rounded-full transition-colors group flex-shrink-0`}
+            } ${theme === 'dark' ? 'hover:bg-[#3c4043]' : 'hover:bg-[#f8f9fa]'} rounded-full transition-colors group flex-shrink-0`}
             aria-label="Search by voice"
           >
             <MicrophoneIcon className={`${isMobile ? 'w-5 h-5' : 'w-5 h-5'} text-[#4285f4] group-hover:text-[#1a73e8]`} />
           </button>
 
-          <div className={`h-[20px] mx-[2px] border-l border-[#dfe1e5] ${isMobile ? 'hidden' : 'block'}`} />
+          <div className={`h-[20px] mx-[2px] border-l ${theme === 'dark' ? 'border-[#5f6368]' : 'border-[#dfe1e5]'} ${isMobile ? 'hidden' : 'block'}`} />
 
           <button
             type="button"
             onClick={handleCameraClick}
             className={`${
               isMobile ? 'p-2' : 'p-[6px]'
-            } hover:bg-[#f8f9fa] rounded-full transition-colors group flex-shrink-0`}
+            } ${theme === 'dark' ? 'hover:bg-[#3c4043]' : 'hover:bg-[#f8f9fa]'} rounded-full transition-colors group flex-shrink-0`}
             aria-label="Search by image"
           >
             <CameraIcon className={`${isMobile ? 'w-5 h-5' : 'w-5 h-5'} text-[#4285f4] group-hover:text-[#1a73e8]`} />

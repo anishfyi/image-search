@@ -91,7 +91,7 @@ const ResultsGrid: React.FC<ResultsGridProps> = ({ results, loading, error }) =>
 
   if (loading) {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2 md:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2 md:gap-4 w-full">
         {[...Array(12)].map((_, index) => (
           <div key={index} className="animate-pulse">
             <div className={`aspect-[4/3] rounded-lg ${
@@ -159,7 +159,7 @@ const ResultsGrid: React.FC<ResultsGridProps> = ({ results, loading, error }) =>
     <>
       <div
         ref={gridRef}
-        className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-2 md:gap-4"
+        className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 md:gap-4 prevent-overflow w-full"
         role="grid"
         aria-label="Search results grid"
       >

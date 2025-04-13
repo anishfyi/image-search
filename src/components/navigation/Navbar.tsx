@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Squares2X2Icon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { SunIcon, MoonIcon } from '@heroicons/react/24/outline';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import SignInButton from '../auth/SignInButton';
+import GoogleLogo from '../common/GoogleLogo';
 
 const Navbar: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
   const auth = useAuth();
   const [isMobile, setIsMobile] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const location = useLocation();
+  const isHomePage = location.pathname === "/";
 
   useEffect(() => {
     const handleResize = () => {
@@ -26,22 +29,20 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <nav className={`sticky top-0 z-50 ${
+    <nav className={`sticky top-0 z-50 prevent-overflow ${
       theme === 'dark' 
         ? 'bg-[#202124] border-[#3c4043]' 
         : 'bg-white border-gray-200'
     } ${isMobile ? '' : 'border-b'}`}>
-      <div className={`flex items-center justify-between ${isMobile ? 'px-2 py-2' : 'px-4 py-2'}`}>
+      <div className={`flex items-center justify-between ${isMobile ? 'mobile-page-container py-2' : 'px-4 py-2'}`}>
         {/* Left Section */}
         {isMobile ? (
           <div className="flex items-center">
-            <Link to="/" className="mr-2">
-              <img 
-                src={theme === 'dark' ? '/google-logo-white.png' : '/google-logo.png'} 
-                alt="Google" 
-                className="h-6"
-              />
-            </Link>
+            {!isHomePage && (
+              <Link to="/" className="mr-2">
+                <GoogleLogo theme={theme} isMobile={true} />
+              </Link>
+            )}
           </div>
         ) : (
           <div className="flex items-center space-x-4">

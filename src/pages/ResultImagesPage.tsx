@@ -101,24 +101,35 @@ const ResultImagesPage: React.FC = () => {
     'h&m accessories'
   ];
 
+  // Add a state variable for controlled search input
+  const [currentSearchQuery, setCurrentSearchQuery] = useState(query || '');
+
+  // Update the current search query when the query from context changes
+  useEffect(() => {
+    setCurrentSearchQuery(query || '');
+  }, [query]);
+
+  // Updated handler for suggestion clicks
+  const handleSuggestionClick = (suggestionText: string) => {
+    // Update local state
+    setCurrentSearchQuery(suggestionText);
+    // Perform the search
+    handleSearch(suggestionText);
+  };
+
   return (
-    <div className={`min-h-screen ${theme === 'dark' ? 'bg-[#202124] text-white' : 'bg-white text-gray-900'}`}>
+    <div className={`min-h-screen w-full prevent-overflow ${theme === 'dark' ? 'bg-[#202124] text-white' : 'bg-white text-gray-900'}`}>
       <Navbar />
 
       {/* Search Section */}
-      <div className={`${isMobile ? 'px-0 pt-3 pb-0 flex-col' : 'px-[156px] py-4 flex'} flex items-center`}>
+      <div className={`${isMobile ? 'mobile-page-container pt-2 pb-0 flex-col' : 'px-[156px] py-4 flex'} flex items-center`}>
         {isMobile ? (
-          <div className="w-full px-3 mb-0">
-            <div className="flex items-center mb-4 ml-2">
-              <Link to="/">
-                <GoogleLogo theme={theme} isMobile={true} />
-              </Link>
-            </div>
+          <div className="w-full mb-0">
             <SearchBar
               onSearch={handleSearch}
               onImageSearch={handleImageSearch}
-              initialQuery={query}
-              className="w-full"
+              initialQuery={currentSearchQuery}
+              className="w-full !mx-0 !px-0"
               theme={theme}
               showWavyUnderline={true}
             />
@@ -134,7 +145,7 @@ const ResultImagesPage: React.FC = () => {
             <SearchBar
               onSearch={handleSearch}
               onImageSearch={handleImageSearch}
-              initialQuery={query}
+              initialQuery={currentSearchQuery}
               className="!max-w-[692px] !mx-0"
               theme={theme}
             />
@@ -145,10 +156,10 @@ const ResultImagesPage: React.FC = () => {
       {/* Navigation and Tools */}
       <div className={`${
         isMobile 
-          ? 'px-0 py-0 overflow-x-auto no-scrollbar flex-nowrap whitespace-nowrap' 
+          ? 'mobile-page-container py-0 overflow-x-auto touch-pan-x no-scrollbar flex-nowrap whitespace-nowrap' 
           : 'px-[156px] py-1 justify-between border-b border-gray-200 dark:border-[#3c4043]'
       } flex items-center border-b border-gray-200 dark:border-gray-700`}>
-        <div className={`flex items-center ${isMobile ? 'space-x-8 px-4 py-2' : 'space-x-6'} overflow-x-auto no-scrollbar`}>
+        <div className={`flex items-center ${isMobile ? 'space-x-6 py-2 -mx-4 px-4' : 'space-x-6'} overflow-x-auto no-scrollbar`}>
           {navigationItems.map((item) => (
             <a
               key={item.name}
@@ -196,11 +207,11 @@ const ResultImagesPage: React.FC = () => {
       </div>
 
       {/* Suggestion Chips */}
-      <div className={`flex items-center gap-2 ${isMobile ? 'px-3 py-2.5 pb-3 mt-2' : 'px-[156px] py-3'} overflow-x-auto no-scrollbar bg-transparent`}>
+      <div className={`flex items-center gap-2 ${isMobile ? 'mobile-page-container py-2.5 pb-3 mt-2 overflow-x-auto touch-pan-x' : 'px-[156px] py-3'} overflow-x-auto no-scrollbar bg-transparent`}>
         {suggestionChips.map((chip) => (
           <button
             key={chip}
-            onClick={() => handleSearch(chip)}
+            onClick={() => handleSuggestionClick(chip)}
             className={`flex-shrink-0 ${isMobile ? 'text-xs px-3 py-1.5 h-8' : 'text-sm px-4 py-1.5'} rounded-full transition-colors ${
               theme === 'dark'
                 ? 'bg-[#303134] text-[#e8eaed] border border-[#3c4043]'
@@ -213,9 +224,9 @@ const ResultImagesPage: React.FC = () => {
       </div>
 
       {/* Main Content */}
-      <main className={`${isMobile ? 'px-2' : 'px-[156px]'} py-4`}>
+      <main className={`${isMobile ? 'mobile-page-container py-4' : 'px-[156px] py-4'}`}>
         {/* Results Count */}
-        <div className={`${isMobile ? 'text-xs px-1' : 'text-sm'} ${
+        <div className={`${isMobile ? 'text-xs' : 'text-sm'} ${
           theme === 'dark' ? 'text-[#969ba1]' : 'text-gray-600'
         } mb-4`}>
           About {results?.length || 0} results

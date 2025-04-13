@@ -79,6 +79,7 @@ const SearchPage: React.FC = () => {
             <SearchBar
               onSearch={handleSearch}
               onImageSearch={handleImageSearch}
+              theme={theme}
             />
           </div>
 
