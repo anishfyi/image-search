@@ -108,7 +108,7 @@ const GoogleLens: React.FC<GoogleLensProps> = ({ onClose, onImageCapture }) => {
   return (
     <div className="fixed inset-0 bg-black z-50 flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-black/50 z-10 relative">
+      <div className="flex items-center justify-between px-4 py-3 z-10 relative">
         <div className="flex items-center space-x-4">
           <button
             onClick={onClose}
@@ -117,7 +117,7 @@ const GoogleLens: React.FC<GoogleLensProps> = ({ onClose, onImageCapture }) => {
           >
             <ArrowLeftIcon className="w-6 h-6" />
           </button>
-          <img src="/google-lens-logo.svg" alt="Google Lens" className="h-8" />
+          <span className="text-white text-2xl font-medium">Google</span>
         </div>
         <div className="flex items-center space-x-4">
           <button
@@ -151,63 +151,71 @@ const GoogleLens: React.FC<GoogleLensProps> = ({ onClose, onImageCapture }) => {
           </div>
         )}
         
-        {/* Camera Overlay */}
+        {/* Camera Overlay - Square viewfinder */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-          <div className="w-[280px] h-[280px] border-2 border-white rounded-lg" />
+          <div className="w-[280px] h-[280px] border border-white rounded-md" />
         </div>
       </div>
 
       {/* Bottom Controls - Fixed position to ensure visibility */}
-      <div className="fixed bottom-0 left-0 right-0 bg-black/90 px-4 py-6 z-50">
+      <div className="fixed bottom-0 left-0 right-0 z-50 pb-16">
         {/* Capture Button */}
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-10">
           <button
             onClick={handleCapture}
             disabled={isProcessing || !isCameraReady}
-            className="w-16 h-16 rounded-full bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/50 disabled:opacity-50 relative shadow-lg"
+            className="w-20 h-20 rounded-full bg-gray-200 focus:outline-none disabled:opacity-50 flex items-center justify-center shadow-lg"
             aria-label="Take photo"
           >
             {isProcessing ? (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+              <div className="flex items-center justify-center">
+                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-black"></div>
               </div>
             ) : (
-              <IonIcon icon={camera} className="text-black text-3xl" />
+              <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center">
+                <IonIcon icon={camera} className="text-black text-3xl" />
+              </div>
             )}
           </button>
         </div>
 
         {/* Mode Selection */}
-        <div className="flex justify-center space-x-4">
+        <div className="flex justify-center space-x-8 px-4">
           <button
             onClick={() => setSelectedMode('translate')}
-            className={`px-4 py-2 rounded-full text-sm font-medium shadow-md ${
+            className="text-center focus:outline-none"
+          >
+            <div className={`px-6 py-2 rounded-full text-sm font-medium ${
               selectedMode === 'translate' 
                 ? 'bg-white text-black' 
-                : 'text-white bg-black/50 border border-white/30'
-            }`}
-          >
-            Translate
+                : 'text-white'
+            }`}>
+              Translate
+            </div>
           </button>
           <button
             onClick={() => setSelectedMode('search')}
-            className={`px-4 py-2 rounded-full text-sm font-medium shadow-md ${
+            className="text-center focus:outline-none"
+          >
+            <div className={`px-6 py-2 rounded-full text-sm font-medium ${
               selectedMode === 'search' 
                 ? 'bg-white text-black' 
-                : 'text-white bg-black/50 border border-white/30'
-            }`}
-          >
-            Search
+                : 'text-white'
+            }`}>
+              Search
+            </div>
           </button>
           <button
             onClick={() => setSelectedMode('homework')}
-            className={`px-4 py-2 rounded-full text-sm font-medium shadow-md ${
+            className="text-center focus:outline-none"
+          >
+            <div className={`px-6 py-2 rounded-full text-sm font-medium ${
               selectedMode === 'homework' 
                 ? 'bg-white text-black' 
-                : 'text-white bg-black/50 border border-white/30'
-            }`}
-          >
-            Homework
+                : 'text-white'
+            }`}>
+              Homework
+            </div>
           </button>
         </div>
       </div>
