@@ -167,22 +167,15 @@ const GoogleLens: React.FC<GoogleLensProps> = ({ onClose, onImageCapture }) => {
       <div className="fixed bottom-0 left-0 right-0 z-50">
         {/* Thumbnail and main search button */}
         <div className="flex justify-center mb-6 relative">
-          {/* Thumbnail */}
+          {/* Plain white dot button */}
           <div className="absolute left-6 bottom-0">
-            <button className="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center shadow-md overflow-hidden">
-              <div className="w-10 h-10 flex items-center justify-center">
-                <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">
-                  <path d="M12 17C12.5523 17 13 16.5523 13 16C13 15.4477 12.5523 15 12 15C11.4477 15 11 15.4477 11 16C11 16.5523 11.4477 17 12 17Z" fill="black"/>
-                </svg>
-              </div>
-            </button>
           </div>
           
           {/* Main Search Button */}
           <button
             onClick={handleCapture}
             disabled={isProcessing || !isCameraReady}
-            className="w-20 h-20 rounded-full bg-white focus:outline-none disabled:opacity-50 flex items-center justify-center border-2 border-gray-300 shadow-lg"
+            className="w-20 h-20 rounded-full bg-gray-400 focus:outline-none disabled:opacity-50 flex items-center justify-center shadow-lg"
             aria-label="Take photo"
           >
             {isProcessing ? (
@@ -190,9 +183,10 @@ const GoogleLens: React.FC<GoogleLensProps> = ({ onClose, onImageCapture }) => {
                 <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-black"></div>
               </div>
             ) : (
-              <div className="w-10 h-10">
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M15.5 14H14.71L14.43 13.73C15.41 12.59 16 11.11 16 9.5C16 5.91 13.09 3 9.5 3C5.91 3 3 5.91 3 9.5C3 13.09 5.91 16 9.5 16C11.11 16 12.59 15.41 13.73 14.43L14 14.71V15.5L19 20.49L20.49 19L15.5 14ZM9.5 14C7.01 14 5 11.99 5 9.5C5 7.01 7.01 5 9.5 5C11.99 5 14 7.01 14 9.5C14 11.99 11.99 14 9.5 14Z" fill="black"/>
+              <div className="w-10 h-10 flex items-center justify-center">
+                <svg viewBox="0 0 24 24" width="24" height="24" stroke="black" stroke-width="2.5" fill="none">
+                  <path d="M11 17.25a6.25 6.25 0 110-12.5 6.25 6.25 0 010 12.5z" />
+                  <path d="M16 16l4.5 4.5" />
                 </svg>
               </div>
             )}
