@@ -10,7 +10,7 @@ interface GoogleLensProps {
 }
 
 const GoogleLens: React.FC<GoogleLensProps> = ({ onClose, onImageCapture }) => {
-  const [selectedMode, setSelectedMode] = useState<'translate' | 'search' | 'homework'>('search');
+  const [selectedMode, setSelectedMode] = useState<'translate' | 'search'>('search');
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const nativeService = NativeService.getInstance();
@@ -92,9 +92,6 @@ const GoogleLens: React.FC<GoogleLensProps> = ({ onClose, onImageCapture }) => {
               onImageCapture(imageData);
             }
             break;
-          case 'homework':
-            // Handle homework
-            break;
         }
       }
     } catch (err) {
@@ -153,7 +150,7 @@ const GoogleLens: React.FC<GoogleLensProps> = ({ onClose, onImageCapture }) => {
         
         {/* Camera Overlay - Square viewfinder */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-          <div className="w-[280px] h-[280px] border border-white rounded-md" />
+          <div className="w-[240px] h-[240px] border border-white rounded-md" />
         </div>
       </div>
 
@@ -203,18 +200,6 @@ const GoogleLens: React.FC<GoogleLensProps> = ({ onClose, onImageCapture }) => {
                 : 'text-white'
             }`}>
               Search
-            </div>
-          </button>
-          <button
-            onClick={() => setSelectedMode('homework')}
-            className="text-center focus:outline-none"
-          >
-            <div className={`px-6 py-2 rounded-full text-sm font-medium ${
-              selectedMode === 'homework' 
-                ? 'bg-white text-black' 
-                : 'text-white'
-            }`}>
-              Homework
             </div>
           </button>
         </div>
