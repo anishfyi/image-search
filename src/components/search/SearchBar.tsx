@@ -10,7 +10,7 @@ import { XMarkIcon } from '../common/icons';
 import { getTrendingSearches } from '../../services/trendingService';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
-import GoogleLensCamera from '../lens/GoogleLensCamera';
+import GoogleLens from './GoogleLens';
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
@@ -214,7 +214,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
   const handleCameraClick = () => {
     if (isMobile) {
-      // Open Google Lens camera interface instead of auto-capturing
+      // Open Google Lens interface for mobile
       setShowLens(true);
     } else {
       // Handle desktop image upload
@@ -408,7 +408,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
       )}
 
       {showLens && (
-        <GoogleLensCamera
+        <GoogleLens
           onClose={() => setShowLens(false)}
           onImageCapture={(imageDataUrl) => {
             // Convert dataURL to File object
