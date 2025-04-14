@@ -158,7 +158,7 @@ const GoogleLens: React.FC<GoogleLensProps> = ({ onClose, onImageCapture }) => {
       </div>
 
       {/* Bottom Controls - Fixed position to ensure visibility */}
-      <div className="bg-black/90 px-4 py-6 relative z-40">
+      <div className="fixed bottom-0 left-0 right-0 bg-black/90 px-4 py-6 z-50">
         {/* Capture Button */}
         <div className="flex justify-center mb-6">
           <button
@@ -213,7 +213,7 @@ const GoogleLens: React.FC<GoogleLensProps> = ({ onClose, onImageCapture }) => {
       </div>
 
       {error && (
-        <div className="absolute bottom-32 left-0 right-0 px-4 z-50">
+        <div className="absolute bottom-48 left-0 right-0 px-4 z-50">
           <div className="bg-red-500 text-white px-4 py-2 rounded text-center shadow-lg">
             {error}
           </div>
