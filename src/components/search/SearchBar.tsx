@@ -336,7 +336,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
           <svg className="w-full h-3" viewBox="0 0 100 4" preserveAspectRatio="none">
             <path 
               d="M0,3.5 C5,0.5 10,6.5 15,3.5 C20,0.5 25,6.5 30,3.5 C35,0.5 40,6.5 45,3.5 C50,0.5 55,6.5 60,3.5 C65,0.5 70,6.5 75,3.5 C80,0.5 85,6.5 90,3.5 C95,0.5 100,6.5 105,3.5" 
-              stroke="red" 
+              stroke="#4285f4" 
               strokeWidth="1.5" 
               fill="none"
             />
