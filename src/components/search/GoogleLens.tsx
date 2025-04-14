@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { XMarkIcon, ArrowLeftIcon, ClockIcon, EllipsisHorizontalIcon } from '../common/icons/index';
 import { NativeService } from '../../services/nativeService';
+import { IonIcon } from '@ionic/react';
+import { camera } from 'ionicons/icons';
 
 interface GoogleLensProps {
   onClose: () => void;
@@ -14,9 +16,12 @@ const GoogleLens: React.FC<GoogleLensProps> = ({ onClose, onImageCapture }) => {
   const nativeService = NativeService.getInstance();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isCameraReady, setIsCameraReady] = useState(false);
+  const [cameraLoading, setCameraLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
     const initializeCamera = async () => {
+      setCameraLoading(true);
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: {
@@ -26,22 +31,32 @@ const GoogleLens: React.FC<GoogleLensProps> = ({ onClose, onImageCapture }) => {
           }
         });
 
+        if (!isMounted) {
+          stream.getTracks().forEach(track => track.stop());
+          return;
+        }
+
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
           videoRef.current.onloadedmetadata = () => {
+            if (!isMounted) return;
             videoRef.current?.play();
             setIsCameraReady(true);
+            setCameraLoading(false);
           };
         }
       } catch (error) {
+        if (!isMounted) return;
         console.error('Error accessing camera:', error);
         setError('Failed to access camera. Please check permissions.');
+        setCameraLoading(false);
       }
     };
 
     initializeCamera();
 
     return () => {
+      isMounted = false;
       if (videoRef.current?.srcObject) {
         const stream = videoRef.current.srcObject as MediaStream;
         stream.getTracks().forEach(track => track.stop());
@@ -50,7 +65,7 @@ const GoogleLens: React.FC<GoogleLensProps> = ({ onClose, onImageCapture }) => {
   }, []);
 
   const handleCapture = async () => {
-    if (!videoRef.current) return;
+    if (!videoRef.current || !isCameraReady) return;
     
     try {
       setIsProcessing(true);
@@ -93,7 +108,7 @@ const GoogleLens: React.FC<GoogleLensProps> = ({ onClose, onImageCapture }) => {
   return (
     <div className="fixed inset-0 bg-black z-50 flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-black/50">
+      <div className="flex items-center justify-between px-4 py-3 bg-black/50 z-10">
         <div className="flex items-center space-x-4">
           <button
             onClick={onClose}
@@ -129,26 +144,35 @@ const GoogleLens: React.FC<GoogleLensProps> = ({ onClose, onImageCapture }) => {
           playsInline
         />
         
+        {/* Camera loading indicator */}
+        {cameraLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-10">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+          </div>
+        )}
+        
         {/* Camera Overlay */}
-        <div className="absolute inset-0 flex items-center justify-center">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
           <div className="w-[280px] h-[280px] border-2 border-white rounded-lg" />
         </div>
       </div>
 
       {/* Bottom Controls */}
-      <div className="bg-black/90 px-4 py-6">
+      <div className="bg-black/90 px-4 py-6 z-30">
         <div className="flex justify-center mb-6">
           {/* Capture Button */}
           <button
             onClick={handleCapture}
             disabled={isProcessing || !isCameraReady}
-            className="w-16 h-16 rounded-full bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/50 disabled:opacity-50"
+            className="w-16 h-16 rounded-full bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/50 disabled:opacity-50 relative z-30"
             aria-label="Take photo"
           >
-            {isProcessing && (
+            {isProcessing ? (
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
               </div>
+            ) : (
+              <IonIcon icon={camera} className="text-black text-3xl" />
             )}
           </button>
         </div>
@@ -183,7 +207,7 @@ const GoogleLens: React.FC<GoogleLensProps> = ({ onClose, onImageCapture }) => {
       </div>
 
       {error && (
-        <div className="absolute bottom-20 left-0 right-0 px-4">
+        <div className="absolute bottom-24 left-0 right-0 px-4 z-40">
           <div className="bg-red-500 text-white px-4 py-2 rounded text-center">
             {error}
           </div>
