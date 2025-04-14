@@ -108,7 +108,7 @@ const GoogleLens: React.FC<GoogleLensProps> = ({ onClose, onImageCapture }) => {
   return (
     <div className="fixed inset-0 bg-black z-50 flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-black/50 z-10">
+      <div className="flex items-center justify-between px-4 py-3 bg-black/50 z-10 relative">
         <div className="flex items-center space-x-4">
           <button
             onClick={onClose}
@@ -136,11 +136,11 @@ const GoogleLens: React.FC<GoogleLensProps> = ({ onClose, onImageCapture }) => {
       </div>
 
       {/* Camera View */}
-      <div className="flex-1 relative">
+      <div className="flex-1 relative overflow-hidden">
         {/* Camera preview */}
         <video
           ref={videoRef}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover absolute inset-0"
           playsInline
         />
         
@@ -157,19 +157,19 @@ const GoogleLens: React.FC<GoogleLensProps> = ({ onClose, onImageCapture }) => {
         </div>
       </div>
 
-      {/* Bottom Controls */}
-      <div className="bg-black/90 px-4 py-6 z-30">
+      {/* Bottom Controls - Fixed position to ensure visibility */}
+      <div className="bg-black/90 px-4 py-6 relative z-40">
+        {/* Capture Button */}
         <div className="flex justify-center mb-6">
-          {/* Capture Button */}
           <button
             onClick={handleCapture}
             disabled={isProcessing || !isCameraReady}
-            className="w-16 h-16 rounded-full bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/50 disabled:opacity-50 relative z-30"
+            className="w-16 h-16 rounded-full bg-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/50 disabled:opacity-50 relative shadow-lg"
             aria-label="Take photo"
           >
             {isProcessing ? (
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
               </div>
             ) : (
               <IonIcon icon={camera} className="text-black text-3xl" />
@@ -181,24 +181,30 @@ const GoogleLens: React.FC<GoogleLensProps> = ({ onClose, onImageCapture }) => {
         <div className="flex justify-center space-x-4">
           <button
             onClick={() => setSelectedMode('translate')}
-            className={`px-4 py-2 rounded-full text-sm ${
-              selectedMode === 'translate' ? 'bg-white text-black' : 'text-white'
+            className={`px-4 py-2 rounded-full text-sm font-medium shadow-md ${
+              selectedMode === 'translate' 
+                ? 'bg-white text-black' 
+                : 'text-white bg-black/50 border border-white/30'
             }`}
           >
             Translate
           </button>
           <button
             onClick={() => setSelectedMode('search')}
-            className={`px-4 py-2 rounded-full text-sm ${
-              selectedMode === 'search' ? 'bg-white text-black' : 'text-white'
+            className={`px-4 py-2 rounded-full text-sm font-medium shadow-md ${
+              selectedMode === 'search' 
+                ? 'bg-white text-black' 
+                : 'text-white bg-black/50 border border-white/30'
             }`}
           >
             Search
           </button>
           <button
             onClick={() => setSelectedMode('homework')}
-            className={`px-4 py-2 rounded-full text-sm ${
-              selectedMode === 'homework' ? 'bg-white text-black' : 'text-white'
+            className={`px-4 py-2 rounded-full text-sm font-medium shadow-md ${
+              selectedMode === 'homework' 
+                ? 'bg-white text-black' 
+                : 'text-white bg-black/50 border border-white/30'
             }`}
           >
             Homework
@@ -207,8 +213,8 @@ const GoogleLens: React.FC<GoogleLensProps> = ({ onClose, onImageCapture }) => {
       </div>
 
       {error && (
-        <div className="absolute bottom-24 left-0 right-0 px-4 z-40">
-          <div className="bg-red-500 text-white px-4 py-2 rounded text-center">
+        <div className="absolute bottom-32 left-0 right-0 px-4 z-50">
+          <div className="bg-red-500 text-white px-4 py-2 rounded text-center shadow-lg">
             {error}
           </div>
         </div>
