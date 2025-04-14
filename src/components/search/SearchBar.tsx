@@ -10,6 +10,7 @@ import { XMarkIcon } from '../common/icons';
 import { getTrendingSearches } from '../../services/trendingService';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
+import GoogleLensCamera from '../lens/GoogleLensCamera';
 
 interface SearchBarProps {
   onSearch: (query: string) => void;
@@ -213,39 +214,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
   const handleCameraClick = () => {
     if (isMobile) {
-      // Open Google Lens or device camera
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        setIsCameraOpen(true);
-        navigator.mediaDevices.getUserMedia({ video: true })
-          .then(stream => {
-            // Handle camera stream
-            const video = document.createElement('video');
-            video.srcObject = stream;
-            video.onloadedmetadata = () => {
-              video.play();
-              // Here you can implement Google Lens-like functionality
-              // For now, we'll just take a photo
-              const canvas = document.createElement('canvas');
-              canvas.width = video.videoWidth;
-              canvas.height = video.videoHeight;
-              canvas.getContext('2d')?.drawImage(video, 0, 0);
-              const imageData = canvas.toDataURL('image/jpeg');
-              // Convert to File object
-              fetch(imageData)
-                .then(res => res.blob())
-                .then(blob => {
-                  const file = new File([blob], 'camera-photo.jpg', { type: 'image/jpeg' });
-                  onImageSearch(file);
-                  stream.getTracks().forEach(track => track.stop());
-                  setIsCameraOpen(false);
-                });
-            };
-          })
-          .catch(err => {
-            console.error('Camera error:', err);
-            setIsCameraOpen(false);
-          });
-      }
+      // Open Google Lens camera interface instead of auto-capturing
+      setShowLens(true);
     } else {
       // Handle desktop image upload
       const input = document.createElement('input');
@@ -434,6 +404,26 @@ const SearchBar: React.FC<SearchBarProps> = ({
         <VoiceSearch
           onClose={() => setShowVoiceSearch(false)}
           onResult={handleVoiceResult}
+        />
+      )}
+
+      {showLens && (
+        <GoogleLensCamera
+          onClose={() => setShowLens(false)}
+          onImageCapture={(imageDataUrl) => {
+            // Convert dataURL to File object
+            fetch(imageDataUrl)
+              .then(res => res.blob())
+              .then(blob => {
+                const file = new File([blob], 'camera-photo.jpg', { type: 'image/jpeg' });
+                onImageSearch(file);
+                setShowLens(false);
+              })
+              .catch(err => {
+                console.error('Error processing image:', err);
+                setShowLens(false);
+              });
+          }}
         />
       )}
 

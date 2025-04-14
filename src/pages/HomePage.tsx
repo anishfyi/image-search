@@ -5,11 +5,11 @@ import GoogleLogo from '../components/common/GoogleLogo';
 import PersonalizedFeed from '../components/feed/PersonalizedFeed';
 
 const HomePage: React.FC = () => {
-  const { search, setQuery, searchByImage, isLoading, error } = useSearch();
+  const { searchByText, setQuery, searchByImage, isLoading, error } = useSearch();
 
   const handleSearch = (query: string) => {
     setQuery(query);
-    search();
+    searchByText(query);
   };
 
   const handleImageSearch = async (file: File) => {
@@ -25,7 +25,7 @@ const HomePage: React.FC = () => {
       <div className="flex-1 flex flex-col items-center justify-center p-4">
         <div className="w-full max-w-[584px] -mt-[10vh] md:-mt-[15vh]">
           <div className="flex justify-center mb-8">
-            <GoogleLogo size="lg" />
+            <GoogleLogo size="large" theme="light" isMobile={false} />
           </div>
           <SearchBar
             onSearch={handleSearch}
